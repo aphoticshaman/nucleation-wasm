@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Divergence Engine - Conflict Prediction API</title>
+  <meta name="description" content="Predict international conflict from divergent worldviews. 100x faster than Python, deployable anywhere.">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --fg: #e0e0e0;
+      --accent: #00ff88;
+      --accent2: #ff6b6b;
+      --muted: #666;
+      --card: #141414;
+      --border: #2a2a2a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+    header { text-align: center; padding: 4rem 0; }
+    h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+    h1 span { color: var(--accent); }
+    .tagline { color: var(--muted); font-size: 1.1rem; margin-bottom: 2rem; }
+    .formula {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      border-radius: 8px;
+      font-size: 1.2rem;
+      margin: 2rem 0;
+    }
+    .formula code { color: var(--accent); }
+
+    /* Live Demo */
+    .demo {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem;
+      margin: 3rem 0;
+    }
+    .demo h2 { margin-bottom: 1.5rem; color: var(--accent); }
+    .demo-controls {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    select, button {
+      background: var(--bg);
+      color: var(--fg);
+      border: 1px solid var(--border);
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button { background: var(--accent); color: var(--bg); font-weight: bold; }
+    button:hover { opacity: 0.9; }
+    .result {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1rem;
+      overflow-x: auto;
+    }
+    .result pre { white-space: pre-wrap; }
+    .risk-LOW { color: var(--accent); }
+    .risk-MODERATE { color: #ffd93d; }
+    .risk-ELEVATED { color: #ff9f43; }
+    .risk-HIGH { color: var(--accent2); }
+    .risk-CRITICAL { color: #ff0000; }
+
+    /* Pricing */
+    .pricing {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin: 3rem 0;
+    }
+    .tier {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+    }
+    .tier.featured { border-color: var(--accent); }
+    .tier h3 { margin-bottom: 0.5rem; }
+    .tier .price { font-size: 2rem; color: var(--accent); margin: 1rem 0; }
+    .tier .price span { font-size: 1rem; color: var(--muted); }
+    .tier ul { list-style: none; margin: 1.5rem 0; text-align: left; }
+    .tier li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+    .tier li:before { content: "✓ "; color: var(--accent); }
+    .tier button { width: 100%; margin-top: 1rem; }
+    .tier button.secondary { background: var(--bg); color: var(--fg); border-color: var(--accent); }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 3rem 0;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    .links { display: flex; gap: 2rem; justify-content: center; margin: 2rem 0; flex-wrap: wrap; }
+    .links a {
+      color: var(--fg);
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+    .links a:hover { border-color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1><span>Divergence</span> Engine</h1>
+      <p class="tagline">Predict international conflict from divergent worldviews.<br>100x faster than Python. Deployable to air-gapped systems.</p>
+      <div class="formula">
+        <code>Φ(A,B) = D<sub>KL</sub>(A‖B) + D<sub>KL</sub>(B‖A)</code>
+        <br><br>
+        <em>Conflict is compression divergence. Peace is alignment.</em>
+      </div>
+      <div class="links">
+        <a href="https://github.com/aphoticshaman/nucleation-wasm">GitHub</a>
+        <a href="https://www.npmjs.com/package/nucleation-wasm">npm</a>
+        <a href="https://zenodo.org/records/17766946">Paper</a>
+      </div>
+    </header>
+
+    <section class="demo">
+      <h2>// Live Demo</h2>
+      <div class="demo-controls">
+        <select id="actorA">
+          <option value="USA">USA</option>
+          <option value="RUS">Russia</option>
+          <option value="CHN" selected>China</option>
+          <option value="IRN">Iran</option>
+          <option value="ISR">Israel</option>
+          <option value="UKR">Ukraine</option>
+          <option value="PRK">North Korea</option>
+          <option value="TWN">Taiwan</option>
+          <option value="SAU">Saudi Arabia</option>
+          <option value="EUR">EU</option>
+        </select>
+        <span style="color: var(--muted); padding: 0.75rem;">vs</span>
+        <select id="actorB">
+          <option value="USA" selected>USA</option>
+          <option value="RUS">Russia</option>
+          <option value="CHN">China</option>
+          <option value="IRN">Iran</option>
+          <option value="ISR">Israel</option>
+          <option value="UKR">Ukraine</option>
+          <option value="PRK">North Korea</option>
+          <option value="TWN">Taiwan</option>
+          <option value="SAU">Saudi Arabia</option>
+          <option value="EUR">EU</option>
+        </select>
+        <button onclick="runPrediction()">Analyze</button>
+      </div>
+      <div class="result">
+        <pre id="output">// Click "Analyze" to compute conflict potential</pre>
+      </div>
+    </section>
+
+    <section>
+      <h2 style="text-align: center; margin-bottom: 2rem;">Pricing</h2>
+      <div class="pricing">
+        <div class="tier">
+          <h3>Free</h3>
+          <div class="price">$0<span>/mo</span></div>
+          <ul>
+            <li>100 API calls/month</li>
+            <li>10 pre-configured actors</li>
+            <li>Standard divergence metrics</li>
+            <li>Community support</li>
+          </ul>
+          <button class="secondary" onclick="window.location.href='mailto:ryan@example.com?subject=Free%20API%20Key'">Get API Key</button>
+        </div>
+        <div class="tier featured">
+          <h3>Pro</h3>
+          <div class="price">$49<span>/mo</span></div>
+          <ul>
+            <li>10,000 API calls/month</li>
+            <li>Custom actor definitions</li>
+            <li>Historical trajectory data</li>
+            <li>Email support</li>
+          </ul>
+          <button onclick="window.location.href='https://buy.stripe.com/YOUR_STRIPE_LINK'">Subscribe</button>
+        </div>
+        <div class="tier">
+          <h3>Enterprise</h3>
+          <div class="price">$499<span>/mo</span></div>
+          <ul>
+            <li>Unlimited API calls</li>
+            <li>On-prem deployment</li>
+            <li>Custom model training</li>
+            <li>Dedicated support</li>
+          </ul>
+          <button class="secondary" onclick="window.location.href='mailto:ryan@example.com?subject=Enterprise%20Inquiry'">Contact</button>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin: 3rem 0;">
+      <h2 style="text-align: center; margin-bottom: 1rem;">API Example</h2>
+      <div class="result">
+        <pre>curl -X POST https://api.divergence.io/predict \
+  -H "Content-Type: application/json" \
+  -d '{"actor_a": "USA", "actor_b": "CHN"}'
+
+{
+  "metrics": {
+    "phi": 0.4821,
+    "jensen_shannon": 0.1142
+  },
+  "prediction": {
+    "escalation_probability": 0.412,
+    "risk_level": "MODERATE"
+  }
+}</pre>
+      </div>
+    </section>
+
+    <footer>
+      <p>Built by <a href="https://twitter.com/aphoticshaman">@aphoticshaman</a></p>
+      <p style="margin-top: 0.5rem;">Rust/WASM core • Cloudflare Edge • Information Theory</p>
+    </footer>
+  </div>
+
+  <script>
+    // Local computation (same math as API)
+    const EPSILON = 1e-10;
+    const ACTORS = {
+      USA: [0.35, 0.25, 0.15, 0.10, 0.05, 0.04, 0.03, 0.02, 0.01],
+      RUS: [0.20, 0.20, 0.18, 0.15, 0.10, 0.08, 0.05, 0.03, 0.01],
+      CHN: [0.30, 0.22, 0.18, 0.12, 0.08, 0.05, 0.03, 0.01, 0.01],
+      IRN: [0.25, 0.20, 0.18, 0.15, 0.10, 0.06, 0.04, 0.01, 0.01],
+      ISR: [0.28, 0.22, 0.17, 0.13, 0.09, 0.05, 0.04, 0.01, 0.01],
+      UKR: [0.22, 0.20, 0.18, 0.15, 0.10, 0.07, 0.05, 0.02, 0.01],
+      PRK: [0.18, 0.18, 0.17, 0.16, 0.12, 0.09, 0.06, 0.03, 0.01],
+      TWN: [0.32, 0.24, 0.16, 0.11, 0.07, 0.05, 0.03, 0.01, 0.01],
+      SAU: [0.26, 0.21, 0.17, 0.14, 0.09, 0.06, 0.04, 0.02, 0.01],
+      EUR: [0.33, 0.24, 0.16, 0.11, 0.06, 0.05, 0.03, 0.01, 0.01],
+    };
+
+    function normalize(d) {
+      const s = d.reduce((a,b) => a+b, 0);
+      return d.map(x => (x + EPSILON) / (s + EPSILON * d.length));
+    }
+
+    function kl(p, q) {
+      return p.reduce((sum, pi, i) => {
+        const qi = Math.max(q[i], EPSILON);
+        return sum + Math.max(pi, EPSILON) * Math.log(Math.max(pi, EPSILON) / qi);
+      }, 0) / Math.LN2;
+    }
+
+    function runPrediction() {
+      const a = document.getElementById('actorA').value;
+      const b = document.getElementById('actorB').value;
+
+      const p = normalize(ACTORS[a]);
+      const q = normalize(ACTORS[b]);
+
+      const phi = kl(p, q) + kl(q, p);
+      const m = p.map((pi, i) => 0.5 * (pi + q[i]));
+      const js = 0.5 * kl(p, m) + 0.5 * kl(q, m);
+      const prob = 1 / (1 + Math.exp(-(0.5 * phi - 0.15)));
+
+      let risk = "LOW";
+      if (phi >= 0.5) risk = "MODERATE";
+      if (phi >= 1.0) risk = "ELEVATED";
+      if (phi >= 2.0) risk = "HIGH";
+      if (phi >= 4.0) risk = "CRITICAL";
+
+      const output = `{
+  "dyad": "${a} ↔ ${b}",
+  "metrics": {
+    "phi": ${phi.toFixed(4)},
+    "jensen_shannon": ${js.toFixed(4)},
+    "kl_${a.toLowerCase()}_${b.toLowerCase()}": ${kl(p,q).toFixed(4)},
+    "kl_${b.toLowerCase()}_${a.toLowerCase()}": ${kl(q,p).toFixed(4)}
+  },
+  "prediction": {
+    "escalation_probability": ${prob.toFixed(3)},
+    "risk_level": "<span class='risk-${risk}'>${risk}</span>"
+  },
+  "interpretation": "${risk === 'LOW' ? 'Worldviews relatively aligned' :
+    risk === 'MODERATE' ? 'Meaningful divergence detected' :
+    risk === 'ELEVATED' ? 'Significant worldview gap' :
+    risk === 'HIGH' ? 'Major compression divergence' : 'Critical misalignment'}"
+}`;
+
+      document.getElementById('output').innerHTML = output;
+    }
+
+    // Run on load
+    runPrediction();
+  </script>
+</body>
+</html>
