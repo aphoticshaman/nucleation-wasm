@@ -1,0 +1,59 @@
+[package]
+name = "divergence-engine"
+version = "0.1.0"
+edition = "2021"
+authors = ["Ryan J Cardwell (Archer Phoenix)"]
+description = "High-performance compression dynamics engine for conflict prediction"
+license = "MIT"
+repository = "https://github.com/aphoticshaman/nucleation-wasm"
+keywords = ["conflict", "prediction", "information-theory", "wasm", "geopolitics"]
+categories = ["science", "wasm", "algorithms"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["std"]
+std = []
+wasm = ["wasm-bindgen", "js-sys", "web-sys", "console_error_panic_hook", "getrandom/js"]
+streaming = ["tokio", "futures", "async-trait"]
+simd = []  # Future: SIMD optimizations for batch divergence
+
+[dependencies]
+# Core
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+
+# Math
+nalgebra = { version = "0.32", default-features = false, features = ["std"] }
+
+# WASM (optional)
+wasm-bindgen = { version = "0.2", optional = true }
+js-sys = { version = "0.3", optional = true }
+web-sys = { version = "0.3", optional = true, features = ["console"] }
+console_error_panic_hook = { version = "0.1", optional = true }
+getrandom = { version = "0.2", optional = true }
+
+# Streaming (optional)
+tokio = { version = "1.0", features = ["sync", "rt"], optional = true }
+futures = { version = "0.3", optional = true }
+async-trait = { version = "0.1", optional = true }
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"
+criterion = "0.5"
+
+[[bench]]
+name = "divergence_bench"
+harness = false
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.release-wasm]
+inherits = "release"
+opt-level = "s"  # Size optimization for WASM
