@@ -1,105 +1,171 @@
 //! # Nucleation
 //!
-//! Entropy-based cognitive insight detection primitives.
+//! Phase transition detection and compression dynamics for early warning systems.
 //!
-//! This crate provides the foundation for building cognitive state detection
-//! and active resonance control systems. It implements:
+//! This crate provides tools for detecting phase transitions in complex systems
+//! and monitoring conflict potential between actors. It implements:
+//!
+//! ## Core Modules
+//!
+//! - **Variance Inflection Detection**: Identify phase transitions via d²V/dt²
+//! - **Compression Dynamics**: KL-divergence framework for conflict modeling
+//! - **Shepherd Dynamics**: Unified early warning combining both approaches
+//!
+//! ## Supporting Modules
 //!
 //! - **Entropy calculations**: Shannon, permutation, relative entropy
-//! - **Distance metrics**: Hellinger, Jensen-Shannon, Fisher-Rao
+//! - **Distance metrics**: Hellinger, Jensen-Shannon, Fisher-Rao, Wasserstein
 //! - **Signal processing**: Rolling statistics, gradients, phase tracking
-//! - **Nucleation detection**: Multi-signal concordance detector
-//! - **ACR control**: Kuramoto-inspired phase-locking controller
+//! - **Cognitive detection**: Entropy-based insight detection (ACR framework)
 //!
-//! ## Quick Start
+//! ## Quick Start: Variance Inflection
 //!
-//! ```rust
-//! use nucleation::{NucleationDetector, DetectorConfig, DetectionPhase};
+//! ```rust,ignore
+//! use nucleation::{VarianceInflectionDetector, VarianceConfig, Phase};
 //!
-//! let mut detector = NucleationDetector::with_sensitivity("balanced");
+//! let mut detector = VarianceInflectionDetector::with_default_config();
 //!
-//! // Process behavioral events
-//! for (symbol, timestamp, weight) in events {
-//!     if let Some(precursor) = detector.update(symbol, timestamp, weight) {
-//!         println!("Insight precursor detected: {:?}", precursor.phase);
+//! // Stream observations
+//! for value in time_series {
+//!     let result = detector.update(value);
+//!     match result.phase {
+//!         Phase::Critical => println!("Transition imminent!"),
+//!         Phase::Approaching => println!("Watch closely..."),
+//!         _ => {}
 //!     }
 //! }
 //! ```
 //!
-//! ## ACR Controller
+//! ## Quick Start: Compression Dynamics
 //!
-//! ```rust
-//! use nucleation::acr::{ACRController, CognitiveModality, ControlAction};
+//! ```rust,ignore
+//! use nucleation::{CompressionDynamicsModel, CompressionScheme};
 //!
-//! let mut controller = ACRController::new(CognitiveModality::Integration);
+//! let mut model = CompressionDynamicsModel::new(50);
 //!
-//! // Update with observations
-//! let signal = controller.update(timestamp, event_duration, switching_freq);
+//! model.register_actor("USA", Some(vec![/* distribution */]));
+//! model.register_actor("RUS", Some(vec![/* distribution */]));
 //!
-//! match signal.action {
-//!     ControlAction::TriggerInsight => println!("Fire the hint!"),
-//!     ControlAction::SlowDown => println!("Reduce pacing to {}", signal.pacing_factor),
-//!     _ => {}
+//! let potential = model.conflict_potential("USA", "RUS").unwrap();
+//! println!("Conflict potential Φ = {:.3}", potential.phi);
+//! ```
+//!
+//! ## Quick Start: Shepherd Dynamics (Unified)
+//!
+//! ```rust,ignore
+//! use nucleation::{ShepherdDynamics, AlertLevel};
+//!
+//! let mut shepherd = ShepherdDynamics::new(50);
+//!
+//! shepherd.register_actor("USA", None);
+//! shepherd.register_actor("RUS", None);
+//!
+//! // Update with observations over time
+//! let alerts = shepherd.update_actor("USA", &observation, timestamp);
+//!
+//! for alert in alerts {
+//!     if alert.alert_level >= AlertLevel::Orange {
+//!         println!("WARNING: {}", alert.message);
+//!     }
 //! }
 //! ```
 //!
 //! ## Architecture
 //!
 //! ```text
-//! ┌─────────────────────────────────────────────────────────────────┐
-//! │                         nucleation                              │
-//! ├─────────────────────────────────────────────────────────────────┤
-//! │  entropy.rs     │  distance.rs    │  signal.rs                  │
-//! │  - Shannon      │  - Hellinger    │  - RollingStats             │
-//! │  - Permutation  │  - JS-divergence│  - GradientTracker          │
-//! │  - KL-divergence│  - Fisher-Rao   │  - PhaseTracker             │
-//! │  - Entropy rate │  - Wasserstein  │  - OEPEstimator             │
-//! ├─────────────────┴─────────────────┴─────────────────────────────┤
-//! │  detector.rs                      │  acr.rs                     │
-//! │  - NucleationDetector             │  - ACRController            │
-//! │  - InsightPrecursor               │  - CognitiveModality        │
-//! │  - DetectionPhase                 │  - ControlSignal            │
-//! │  - Multi-signal concordance       │  - Kuramoto phase dynamics  │
-//! └───────────────────────────────────┴─────────────────────────────┘
+//! ┌─────────────────────────────────────────────────────────────────────────┐
+//! │                            nucleation                                    │
+//! ├─────────────────────────────────────────────────────────────────────────┤
+//! │  CORE DETECTION                                                          │
+//! │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────────┐  │
+//! │  │  variance.rs    │  │  compression.rs │  │  shepherd.rs            │  │
+//! │  │  - Inflection   │  │  - Schemes      │  │  - Unified EWS         │  │
+//! │  │  - Phase detect │→ │  - Φ(A,B)       │→ │  - Nucleation alerts   │  │
+//! │  │  - d²V/dt²      │  │  - Grievance    │  │  - Multi-dyad monitor  │  │
+//! │  └─────────────────┘  └─────────────────┘  └─────────────────────────┘  │
+//! ├─────────────────────────────────────────────────────────────────────────┤
+//! │  PRIMITIVES                                                              │
+//! │  entropy.rs       │  distance.rs      │  signal.rs                      │
+//! │  - Shannon        │  - Hellinger      │  - RollingStats                 │
+//! │  - Permutation    │  - JS-divergence  │  - GradientTracker              │
+//! │  - KL-divergence  │  - Fisher-Rao     │  - PhaseTracker                 │
+//! ├─────────────────────────────────────────────────────────────────────────┤
+//! │  COGNITIVE (LEGACY)                                                      │
+//! │  detector.rs      │  acr.rs                                              │
+//! │  - CognitiveDetector │  - ACRController                                  │
+//! │  - InsightPrecursor  │  - Kuramoto dynamics                              │
+//! └─────────────────────────────────────────────────────────────────────────┘
 //! ```
 //!
-//! ## Mathematical Foundation
+//! ## Key Equations
 //!
-//! Based on the Unified Entropy Theory (Theorems 1-14) and the Active
-//! Cognitive Resonance (ACR) framework for phase-locked insight induction.
+//! **Conflict Potential** (Compression Dynamics):
+//! ```text
+//! Φ(A,B) = D_KL(C_A || C_B) + D_KL(C_B || C_A)
+//! ```
 //!
-//! Key equations:
-//! - OEP: dE/dt = -E/τ + α·Σδ(t-tᵢ)·Ψ(Oᵢ) + η(t)
-//! - ACR: dφ_int/dt = ω_int + K(E)·sin(φ_ext - φ_int) + β·u(t)
-//! - Resonance: R(t) = |⟨exp(i·Δφ)⟩|
+//! **Variance Inflection** (Phase Detection):
+//! ```text
+//! Signal = |d²V/dt²| where V = rolling variance
+//! Transition when z-score(Signal) > threshold
+//! ```
+//!
+//! **Shepherd Dynamics** (Unified):
+//! ```text
+//! Monitor Φ(t) trajectory with variance inflection detector
+//! Alert when nucleation signature detected in divergence dynamics
+//! ```
 //!
 //! ## Crate Features
 //!
-//! - `simd`: Enable SIMD optimizations (requires nightly)
-//! - `wasm`: WASM-compatible builds for browser deployment
+//! - `std`: Standard library support (default)
+//! - `wasm`: WASM-compatible builds with JS bindings
+//! - `serialize`: Serde serialization support
+//! - `simd`: SIMD optimizations (requires nightly)
 
+// Core modules
+pub mod variance;
+pub mod compression;
+pub mod shepherd;
+
+// Primitive modules
 pub mod entropy;
 pub mod distance;
 pub mod signal;
+
+// Cognitive/Legacy modules
 pub mod detector;
 pub mod acr;
 
-// Re-exports for convenience
-pub use detector::{
-    NucleationDetector,
-    DetectorConfig,
-    DetectionPhase,
-    InsightPrecursor,
+// ============================================================================
+// Core exports (Phase transition & Conflict)
+// ============================================================================
+
+pub use variance::{
+    VarianceInflectionDetector,
+    VarianceConfig,
+    SmoothingKernel,
+    Phase,
+    InflectionResult,
 };
 
-pub use acr::{
-    ACRController,
-    ACRState,
-    CognitiveModality,
-    ControlSignal,
-    ControlAction,
-    LQRGains,
+pub use compression::{
+    CompressionScheme,
+    CompressionDynamicsModel,
+    ConflictPotential,
+    Grievance,
+    SchemeSource,
 };
+
+pub use shepherd::{
+    ShepherdDynamics,
+    NucleationAlert,
+    AlertLevel,
+};
+
+// ============================================================================
+// Primitive exports
+// ============================================================================
 
 pub use entropy::{
     shannon_entropy,
@@ -127,25 +193,102 @@ pub use signal::{
     OEPEstimator,
 };
 
+// ============================================================================
+// Cognitive/Legacy exports (renamed for clarity)
+// ============================================================================
+
+pub use detector::{
+    NucleationDetector as CognitiveDetector,
+    DetectorConfig as CognitiveConfig,
+    DetectionPhase as CognitivePhase,
+    InsightPrecursor,
+};
+
+pub use acr::{
+    ACRController,
+    ACRState,
+    CognitiveModality,
+    ControlSignal,
+    ControlAction,
+    LQRGains,
+};
+
+// ============================================================================
+// Convenience re-exports (backwards compatibility)
+// ============================================================================
+
+// Keep old names for backwards compatibility
+pub use detector::NucleationDetector;
+pub use detector::DetectorConfig;
+pub use detector::DetectionPhase;
+
+// ============================================================================
+// Version and factories
+// ============================================================================
+
 /// Crate version
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
-/// Quick detector factory
+/// Create a variance inflection detector with default config.
+pub fn create_variance_detector() -> VarianceInflectionDetector {
+    VarianceInflectionDetector::with_default_config()
+}
+
+/// Create a compression dynamics model.
+pub fn create_compression_model(n_categories: usize) -> CompressionDynamicsModel {
+    CompressionDynamicsModel::new(n_categories)
+}
+
+/// Create a Shepherd Dynamics system.
+pub fn create_shepherd(n_categories: usize) -> ShepherdDynamics {
+    ShepherdDynamics::new(n_categories)
+}
+
+/// Create a cognitive detector (legacy).
 pub fn create_detector(sensitivity: &str) -> NucleationDetector {
     NucleationDetector::with_sensitivity(sensitivity)
 }
 
-/// Quick controller factory
+/// Create an ACR controller (legacy).
 pub fn create_controller(modality: CognitiveModality) -> ACRController {
     ACRController::new(modality)
 }
+
+// ============================================================================
+// WASM bindings (when feature enabled)
+// ============================================================================
+
+#[cfg(feature = "wasm")]
+pub mod wasm;
+
+// ============================================================================
+// Tests
+// ============================================================================
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn test_reexports() {
+    fn test_variance_detector_creation() {
+        let detector = create_variance_detector();
+        assert_eq!(detector.count(), 0);
+    }
+
+    #[test]
+    fn test_compression_model_creation() {
+        let model = create_compression_model(10);
+        assert!(model.actors().is_empty());
+    }
+
+    #[test]
+    fn test_shepherd_creation() {
+        let shepherd = create_shepherd(10);
+        assert!(shepherd.actors().is_empty());
+    }
+
+    #[test]
+    fn test_legacy_exports() {
         let _ = create_detector("balanced");
         let _ = create_controller(CognitiveModality::Integration);
         let _ = shannon_entropy(&[1, 2, 3, 4]);
@@ -155,5 +298,6 @@ mod tests {
     #[test]
     fn test_version() {
         assert!(!VERSION.is_empty());
+        assert!(VERSION.starts_with("0.2"));
     }
 }

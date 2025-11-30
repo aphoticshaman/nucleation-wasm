@@ -1,0 +1,31 @@
+{
+  "name": "nucleation-wasm",
+  "version": "0.2.0",
+  "description": "Phase transition detection and compression dynamics for early warning systems",
+  "license": "MIT OR Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aphoticshaman/nucleation-wasm"
+  },
+  "keywords": [
+    "phase-transitions",
+    "early-warning",
+    "conflict-prediction",
+    "compression-dynamics",
+    "wasm",
+    "webassembly",
+    "variance-detection"
+  ],
+  "author": "Ryan Cardwell <aphotic.noise@gmail.com>",
+  "files": [
+    "nucleation_bg.wasm",
+    "nucleation.js",
+    "nucleation.d.ts",
+    "nucleation_bg.wasm.d.ts"
+  ],
+  "main": "nucleation.js",
+  "types": "nucleation.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
