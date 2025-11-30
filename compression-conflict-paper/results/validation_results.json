@@ -1,0 +1,30 @@
+{
+  "timestamp": "2025-11-30T01:07:56.864863",
+  "n_events": 70924,
+  "n_actors": 10,
+  "n_dyads": 45,
+  "h1_correlation": {
+    "r": 0.3318521028658577,
+    "p": 0.048010423785472774,
+    "ci": [
+      0.02176726537463542,
+      0.6794964046202298
+    ],
+    "pass": true
+  },
+  "h2_temporal": {
+    "r_lagged": 0.6667447419684002,
+    "pass": true
+  },
+  "h3_prediction": {
+    "auc": 0.5858090614886732,
+    "avg_precision": 0.48217016616910763,
+    "f1": 0.5928853754523582,
+    "pass": false
+  },
+  "baselines": {
+    "random_auc": 0.5,
+    "intensity_auc": 0.46941747572815534
+  },
+  "overall_pass": true
+}
