@@ -4,3 +4,11 @@ __pycache__/
 .pytest_cache/
 experiments/
 *.egg-info/
+
+# Rust
+target/
+*.rs.bk
+
+# WASM build output
+pkg/
+node_modules/
