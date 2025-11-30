@@ -1,0 +1,23 @@
+[package]
+name = "nucleation"
+version = "0.1.0"
+edition = "2021"
+authors = ["Ryan Cardwell <aphotic.noise@gmail.com>"]
+description = "Entropy-based cognitive insight detection primitives"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/aphoticshaman/orthogonal"
+keywords = ["entropy", "signal-processing", "cognitive", "detection", "ml"]
+categories = ["science", "mathematics"]
+
+[dependencies]
+
+[dev-dependencies]
+
+[features]
+default = []
+simd = []
+wasm = []
+
+[lib]
+name = "nucleation"
+path = "src/lib.rs"
