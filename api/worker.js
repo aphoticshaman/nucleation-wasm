@@ -339,6 +339,7 @@ const LANDING_PAGE_HTML = `<!DOCTYPE html>
     select{min-width:140px}
     button{background:var(--accent);color:var(--bg);font-weight:bold}button:hover{opacity:0.9}
     button.secondary{background:var(--bg);color:var(--accent);border-color:var(--accent)}
+    button.small{padding:0.3rem 0.6rem;font-size:0.75rem;background:var(--card);color:var(--muted);border-color:var(--border)}
     .result{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1rem;overflow-x:auto;max-height:400px;overflow-y:auto}
     .result pre{white-space:pre-wrap;font-size:0.85rem}
     .risk-LOW{color:var(--accent)}.risk-MODERATE{color:#ffd93d}.risk-ELEVATED{color:#ff9f43}.risk-HIGH{color:var(--accent2)}.risk-CRITICAL{color:#ff0000}
@@ -433,8 +434,12 @@ const LANDING_PAGE_HTML = `<!DOCTYPE html>
         <button onclick="runPredict()">Predict</button>
         <button class="secondary" onclick="runExplain()">Explain</button>
         <button class="secondary" onclick="runAlign()">Align</button>
+        <span style="margin-left:auto;display:flex;gap:0.5rem">
+          <button class="small" onclick="copyJSON()" title="Copy JSON">📋 Copy</button>
+          <button class="small" onclick="exportJSON()" title="Export JSON">💾 Export</button>
+        </span>
       </div>
-      <div class="result"><pre id="output">// Select actors and click an action</pre></div>
+      <div class="result"><div id="output">// Select actors and click an action</div></div>
     </section>
 
     <div class="endpoints">
@@ -473,30 +478,116 @@ const LANDING_PAGE_HTML = `<!DOCTYPE html>
   </div>
   <script>
     const BASE='';
+    let lastData=null;
+    let lastType='';
+
+    function formatPredict(d){
+      return \`<div style="font-size:0.9rem">
+<h3 style="color:var(--accent);margin:0 0 1rem">\${d.actor_a.name} vs \${d.actor_b.name}</h3>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1rem">
+  <div><span style="color:var(--muted)">Φ (Divergence)</span><br><strong style="font-size:1.5rem">\${d.metrics.phi}</strong></div>
+  <div><span style="color:var(--muted)">Risk Level</span><br><strong class="risk-\${d.prediction.risk_level}" style="font-size:1.5rem">\${d.prediction.risk_level}</strong></div>
+  <div><span style="color:var(--muted)">Escalation Prob</span><br><strong style="font-size:1.5rem">\${(d.prediction.escalation_probability*100).toFixed(1)}%</strong></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;font-size:0.85rem">
+  <div><span style="color:var(--muted)">Jensen-Shannon:</span> \${d.metrics.jensen_shannon}</div>
+  <div><span style="color:var(--muted)">Hellinger:</span> \${d.metrics.hellinger}</div>
+  <div><span style="color:var(--muted)">KL(A→B):</span> \${d.metrics.kl_a_b}</div>
+  <div><span style="color:var(--muted)">KL(B→A):</span> \${d.metrics.kl_b_a}</div>
+</div>
+</div>\`;
+    }
+
+    function formatExplain(d){
+      const top3=d.top_divergence_drivers.map(t=>
+        \`<div style="margin:0.5rem 0;padding:0.5rem;background:var(--card);border-radius:4px">
+          <strong style="color:var(--accent)">\${t.category.replace(/_/g,' ')}</strong>
+          <span style="color:var(--muted)">(\${t.percent_of_total}% of divergence)</span><br>
+          <span>\${d.actor_a.name}: \${(t.weight_a*100).toFixed(0)}%</span> vs
+          <span>\${d.actor_b.name}: \${(t.weight_b*100).toFixed(0)}%</span>
+        </div>\`).join('');
+      const aligned=d.alignment_potential.slice(0,5).map(c=>c.replace(/_/g,' ')).join(', ');
+      return \`<div style="font-size:0.9rem">
+<h3 style="color:var(--accent);margin:0 0 0.5rem">\${d.actor_a.name} vs \${d.actor_b.name}</h3>
+<div style="margin-bottom:1rem">
+  <span style="color:var(--muted)">Total Φ:</span> <strong>\${d.total_phi}</strong>
+  <span class="risk-\${d.risk_level}">[\${d.risk_level}]</span>
+</div>
+<p style="color:var(--muted);font-size:0.8rem;margin-bottom:0.5rem">\${d.actor_a.name}: \${d.actor_a.rationale}</p>
+<p style="color:var(--muted);font-size:0.8rem;margin-bottom:1rem">\${d.actor_b.name}: \${d.actor_b.rationale}</p>
+<h4 style="margin:1rem 0 0.5rem">Top Divergence Drivers</h4>
+\${top3}
+<h4 style="margin:1rem 0 0.5rem">Alignment Potential</h4>
+<p style="color:var(--muted)">\${aligned||'None identified'}</p>
+</div>\`;
+    }
+
+    function formatAlign(d){
+      const aligned=d.aligned_categories.slice(0,4).map(c=>
+        \`<span style="background:var(--accent);color:var(--bg);padding:0.2rem 0.5rem;border-radius:3px;margin:0.2rem;display:inline-block">\${c.category.replace(/_/g,' ')}</span>\`).join('');
+      const tensions=d.tension_points.slice(0,3).map(c=>
+        \`<span style="background:var(--accent2);color:var(--bg);padding:0.2rem 0.5rem;border-radius:3px;margin:0.2rem;display:inline-block">\${c.category.replace(/_/g,' ')}</span>\`).join('');
+      const mediators=d.potential_mediators.slice(0,3).map(m=>m.name).join(', ');
+      const recs=d.recommendations.map(r=>
+        \`<div style="margin:0.5rem 0;padding:0.5rem;background:var(--card);border-radius:4px">
+          <strong style="color:\${r.type==='COOPERATION_OPPORTUNITY'?'var(--accent)':'var(--accent2)'}">\${r.type.replace(/_/g,' ')}</strong><br>
+          <span style="color:var(--muted)">\${r.rationale}</span>
+        </div>\`).join('');
+      return \`<div style="font-size:0.9rem">
+<h3 style="color:var(--accent);margin:0 0 1rem">\${d.actor_a.name} ↔ \${d.actor_b.name}</h3>
+<h4 style="margin:0 0 0.5rem">Cooperation Opportunities</h4>
+<div style="margin-bottom:1rem">\${aligned||'<span style="color:var(--muted)">None identified</span>'}</div>
+<h4 style="margin:0 0 0.5rem">Tension Points</h4>
+<div style="margin-bottom:1rem">\${tensions||'<span style="color:var(--muted)">None identified</span>'}</div>
+<h4 style="margin:0 0 0.5rem">Potential Mediators</h4>
+<p style="margin-bottom:1rem;color:var(--muted)">\${mediators||'None identified'}</p>
+<h4 style="margin:0 0 0.5rem">Recommendations</h4>
+\${recs}
+</div>\`;
+    }
+
     async function runPredict(){
       const a=document.getElementById('actorA').value,b=document.getElementById('actorB').value;
       try{
         const r=await fetch(BASE+'/predict',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({actor_a:a,actor_b:b})});
-        const d=await r.json();
-        document.getElementById('output').innerHTML=JSON.stringify(d,null,2).replace(/"(LOW|MODERATE|ELEVATED|HIGH|CRITICAL)"/g,'<span class="risk-\$1">"\$1"</span>');
+        lastData=await r.json();lastType='predict';
+        document.getElementById('output').innerHTML=formatPredict(lastData);
       }catch(e){document.getElementById('output').textContent='Error: '+e.message}
     }
+
     async function runExplain(){
       const a=document.getElementById('actorA').value,b=document.getElementById('actorB').value;
       try{
         const r=await fetch(BASE+'/explain',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({actor_a:a,actor_b:b})});
-        const d=await r.json();
-        document.getElementById('output').innerHTML=JSON.stringify(d,null,2).replace(/"(LOW|MODERATE|ELEVATED|HIGH|CRITICAL)"/g,'<span class="risk-\$1">"\$1"</span>');
+        lastData=await r.json();lastType='explain';
+        document.getElementById('output').innerHTML=formatExplain(lastData);
       }catch(e){document.getElementById('output').textContent='Error: '+e.message}
     }
+
     async function runAlign(){
       const a=document.getElementById('actorA').value,b=document.getElementById('actorB').value;
       try{
         const r=await fetch(BASE+'/align',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({actor_a:a,actor_b:b})});
-        const d=await r.json();
-        document.getElementById('output').innerHTML=JSON.stringify(d,null,2);
+        lastData=await r.json();lastType='align';
+        document.getElementById('output').innerHTML=formatAlign(lastData);
       }catch(e){document.getElementById('output').textContent='Error: '+e.message}
     }
+
+    function copyJSON(){
+      if(!lastData)return;
+      navigator.clipboard.writeText(JSON.stringify(lastData,null,2));
+      const btn=event.target;btn.textContent='✓ Copied';setTimeout(()=>btn.textContent='📋 Copy',1500);
+    }
+
+    function exportJSON(){
+      if(!lastData)return;
+      const blob=new Blob([JSON.stringify(lastData,null,2)],{type:'application/json'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;a.download=\`divergence-\${lastType}-\${lastData.actor_a?.code||'data'}-\${lastData.actor_b?.code||''}.json\`;
+      a.click();URL.revokeObjectURL(url);
+    }
+
     runPredict();
   </script>
 </body>
