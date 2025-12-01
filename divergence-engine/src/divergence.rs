@@ -112,7 +112,11 @@ pub fn jensen_shannon(p: &[f64], q: &[f64]) -> Result<f64> {
     }
 
     // Compute midpoint distribution M = 0.5 * (P + Q)
-    let m: Vec<f64> = p.iter().zip(q.iter()).map(|(&pi, &qi)| 0.5 * (pi + qi)).collect();
+    let m: Vec<f64> = p
+        .iter()
+        .zip(q.iter())
+        .map(|(&pi, &qi)| 0.5 * (pi + qi))
+        .collect();
 
     Ok(0.5 * kl_divergence(p, &m)? + 0.5 * kl_divergence(q, &m)?)
 }

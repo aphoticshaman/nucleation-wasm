@@ -12,7 +12,10 @@ use serde::{Deserialize, Serialize};
 
 /// Source of compression scheme data
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "wasm", derive(wasm_bindgen::prelude::FromWasmAbi, wasm_bindgen::prelude::IntoWasmAbi))]
+#[cfg_attr(
+    feature = "wasm",
+    derive(wasm_bindgen::prelude::FromWasmAbi, wasm_bindgen::prelude::IntoWasmAbi)
+)]
 pub enum SchemeSource {
     /// Extracted from text (speeches, documents, media)
     Text,
@@ -68,9 +71,8 @@ impl CompressionScheme {
         let actor_id = actor_id.into();
         let n = distribution.len();
 
-        let categories = categories.unwrap_or_else(|| {
-            (0..n).map(|i| format!("cat_{}", i)).collect()
-        });
+        let categories =
+            categories.unwrap_or_else(|| (0..n).map(|i| format!("cat_{}", i)).collect());
 
         let mut scheme = Self {
             actor_id,
@@ -201,7 +203,11 @@ impl CompressionScheme {
             .into_iter()
             .take(n)
             .map(|(i, p)| {
-                let name = self.categories.get(i).cloned().unwrap_or_else(|| format!("cat_{}", i));
+                let name = self
+                    .categories
+                    .get(i)
+                    .cloned()
+                    .unwrap_or_else(|| format!("cat_{}", i));
                 (name, p)
             })
             .collect()

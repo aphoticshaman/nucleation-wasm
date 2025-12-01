@@ -101,9 +101,7 @@ fn bench_scheme_operations(c: &mut Criterion) {
         group.bench_with_input(
             BenchmarkId::new("symmetric_divergence", size),
             size,
-            |b, _| {
-                b.iter(|| scheme_a.symmetric_divergence(black_box(&scheme_b)))
-            },
+            |b, _| b.iter(|| scheme_a.symmetric_divergence(black_box(&scheme_b))),
         );
 
         group.bench_with_input(BenchmarkId::new("all_metrics", size), size, |b, _| {

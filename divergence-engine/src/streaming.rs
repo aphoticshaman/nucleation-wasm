@@ -170,7 +170,11 @@ impl StreamProcessor {
         // Update model
         {
             let mut model = self.model.write().await;
-            model.update_scheme(&event.actor_id, &event.observation, Some(event.timestamp_ms))?;
+            model.update_scheme(
+                &event.actor_id,
+                &event.observation,
+                Some(event.timestamp_ms),
+            )?;
         }
 
         // Check for alerts
@@ -328,10 +332,7 @@ impl ChannelEventSource {
         }
     }
 
-    pub fn create_pair(
-        buffer_size: usize,
-        batch_size: usize,
-    ) -> (mpsc::Sender<StreamEvent>, Self) {
+    pub fn create_pair(buffer_size: usize, batch_size: usize) -> (mpsc::Sender<StreamEvent>, Self) {
         let (sender, receiver) = mpsc::channel(buffer_size);
         (sender, Self::new(receiver, batch_size))
     }
