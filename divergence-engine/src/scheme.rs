@@ -12,10 +12,6 @@ use serde::{Deserialize, Serialize};
 
 /// Source of compression scheme data
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(
-    feature = "wasm",
-    derive(wasm_bindgen::prelude::FromWasmAbi, wasm_bindgen::prelude::IntoWasmAbi)
-)]
 pub enum SchemeSource {
     /// Extracted from text (speeches, documents, media)
     Text,
