@@ -201,7 +201,8 @@ impl CompressionDynamicsModel {
         let scheme = CompressionScheme::new(actor_id.clone(), distribution, categories);
 
         self.schemes.insert(actor_id.clone(), scheme);
-        self.grievances.insert(actor_id.clone(), Grievance::new(&actor_id));
+        self.grievances
+            .insert(actor_id.clone(), Grievance::new(&actor_id));
 
         self.schemes.get(&actor_id).unwrap()
     }
@@ -516,7 +517,9 @@ mod tests {
         // Register actors with different worldviews
         let dist_a = vec![0.4, 0.3, 0.15, 0.1, 0.03, 0.01, 0.005, 0.003, 0.001, 0.001];
         let dist_b = vec![0.15, 0.12, 0.11, 0.10, 0.10, 0.10, 0.10, 0.08, 0.07, 0.07];
-        let dist_c = vec![0.35, 0.28, 0.18, 0.12, 0.04, 0.015, 0.008, 0.004, 0.002, 0.001];
+        let dist_c = vec![
+            0.35, 0.28, 0.18, 0.12, 0.04, 0.015, 0.008, 0.004, 0.002, 0.001,
+        ];
 
         model.register_actor("USA", Some(dist_a), None);
         model.register_actor("RUS", Some(dist_b), None);
@@ -528,12 +531,10 @@ mod tests {
 
         // USA-RUS should have higher divergence than USA-GBR (similar worldviews)
         let usa_rus = potentials.iter().find(|p| {
-            (p.actor_a == "USA" && p.actor_b == "RUS")
-                || (p.actor_a == "RUS" && p.actor_b == "USA")
+            (p.actor_a == "USA" && p.actor_b == "RUS") || (p.actor_a == "RUS" && p.actor_b == "USA")
         });
         let usa_gbr = potentials.iter().find(|p| {
-            (p.actor_a == "USA" && p.actor_b == "GBR")
-                || (p.actor_a == "GBR" && p.actor_b == "USA")
+            (p.actor_a == "USA" && p.actor_b == "GBR") || (p.actor_a == "GBR" && p.actor_b == "USA")
         });
 
         assert!(usa_rus.unwrap().phi > usa_gbr.unwrap().phi);
