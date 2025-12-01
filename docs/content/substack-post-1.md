@@ -89,4 +89,4 @@ Every week I'll publish:
 
 *Conflict is compression divergence. Peace is alignment.*
 
-[@aphoticshaman](https://twitter.com/aphoticshaman)
+[@Benthic_Shadow](https://twitter.com/Benthic_Shadow)

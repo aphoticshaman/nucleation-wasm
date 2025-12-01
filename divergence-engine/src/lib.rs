@@ -36,8 +36,6 @@
 //! let potential = model.compute_conflict_potential("USA", "RUS").unwrap();
 //! println!("Φ(USA, RUS) = {:.4}", potential.phi);
 //! ```
-//!
-//! Author: Ryan J Cardwell (Archer Phoenix)
 
 pub mod divergence;
 pub mod error;

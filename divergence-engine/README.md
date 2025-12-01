@@ -182,10 +182,6 @@ Escalation Probability: P(esc) = σ(α·Φ + β·dΦ/dt + γ·G - δ·comm)
 
 MIT
 
-## Author
-
-Ryan J Cardwell (Archer Phoenix)
-
 ---
 
 *"Conflict is compression divergence. Peace is alignment."*
