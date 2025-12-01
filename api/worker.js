@@ -319,184 +319,670 @@ const LANDING_PAGE_HTML = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Divergence Engine v0.3 - Conflict Prediction API</title>
-  <meta name="description" content="40+ actors, 12 categories, detailed divergence breakdowns. Predict conflict from divergent worldviews.">
+  <title>Divergence Engine - Geopolitical Conflict Prediction API</title>
+  <meta name="description" content="Information-theoretic conflict prediction. Quantify worldview divergence between 40+ state actors using KL divergence. REST API for defense, intelligence, and strategic analysis.">
+  <meta name="keywords" content="conflict prediction, geopolitical analysis, KL divergence, strategic intelligence, defense API, OSINT, threat assessment">
+  <meta property="og:title" content="Divergence Engine - Conflict Prediction API">
+  <meta property="og:description" content="Quantify worldview divergence. Predict conflict. Find alignment.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{--bg:#0a0a0a;--fg:#e0e0e0;--accent:#00ff88;--accent2:#ff6b6b;--muted:#666;--card:#141414;--border:#2a2a2a}
+    :root{--bg:#000;--bg2:#0a0a0a;--card:#111;--border:#1a1a1a;--border2:#252525;--fg:#e8e8e8;--muted:#666;--accent:#00ff88;--accent2:#ff6b6b;--warn:#ffd93d;--blue:#4d9fff}
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'SF Mono','Fira Code',monospace;background:var(--bg);color:var(--fg);line-height:1.6;min-height:100vh}
-    .container{max-width:1000px;margin:0 auto;padding:2rem}
-    header{text-align:center;padding:3rem 0}
-    h1{font-size:2.5rem;margin-bottom:0.5rem}h1 span{color:var(--accent)}
-    .version{color:var(--accent);font-size:0.9rem;margin-bottom:1rem}
-    .tagline{color:var(--muted);font-size:1rem;margin-bottom:1.5rem}
-    .formula{background:var(--card);border:1px solid var(--border);padding:1rem;border-radius:8px;font-size:1.1rem;margin:1.5rem 0;display:inline-block}
-    .formula code{color:var(--accent)}
-    .demo{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.5rem;margin:2rem 0}
-    .demo h2{margin-bottom:1rem;color:var(--accent);font-size:1.2rem}
+    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--fg);line-height:1.6}
+    code,pre,.mono{font-family:'JetBrains Mono',monospace}
+    .container{max-width:1200px;margin:0 auto;padding:0 2rem}
+
+    /* Navigation */
+    nav{position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);z-index:1000;padding:1rem 0}
+    nav .container{display:flex;align-items:center;justify-content:space-between}
+    .logo{font-weight:700;font-size:1.1rem;color:var(--accent);text-decoration:none;font-family:'JetBrains Mono',monospace}
+    .nav-links{display:flex;gap:2rem}
+    .nav-links a{color:var(--muted);text-decoration:none;font-size:0.9rem;transition:color 0.2s}
+    .nav-links a:hover{color:var(--fg)}
+
+    /* Hero */
+    .hero{padding:8rem 0 4rem;text-align:center;background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%)}
+    .hero-badge{display:inline-block;background:var(--card);border:1px solid var(--border2);padding:0.4rem 1rem;border-radius:20px;font-size:0.8rem;color:var(--accent);margin-bottom:1.5rem}
+    .hero h1{font-size:3.5rem;font-weight:700;margin-bottom:1rem;letter-spacing:-0.02em}
+    .hero h1 span{color:var(--accent)}
+    .hero-sub{font-size:1.25rem;color:var(--muted);max-width:600px;margin:0 auto 2rem}
+    .hero-stats{display:flex;gap:3rem;justify-content:center;margin:2rem 0}
+    .hero-stat{text-align:center}
+    .hero-stat-num{font-size:2.5rem;font-weight:700;color:var(--accent);font-family:'JetBrains Mono',monospace}
+    .hero-stat-label{font-size:0.85rem;color:var(--muted);margin-top:0.25rem}
+    .hero-cta{display:flex;gap:1rem;justify-content:center;margin-top:2rem}
+    .btn{display:inline-flex;align-items:center;gap:0.5rem;padding:0.75rem 1.5rem;border-radius:6px;font-weight:600;text-decoration:none;font-size:0.95rem;transition:all 0.2s;border:none;cursor:pointer;font-family:inherit}
+    .btn-primary{background:var(--accent);color:var(--bg)}
+    .btn-primary:hover{opacity:0.9;transform:translateY(-1px)}
+    .btn-secondary{background:transparent;color:var(--fg);border:1px solid var(--border2)}
+    .btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+
+    /* Formula */
+    .formula-section{padding:3rem 0;background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+    .formula-box{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:2rem;max-width:800px;margin:0 auto;text-align:center}
+    .formula-box code{font-size:1.4rem;color:var(--accent)}
+    .formula-box p{color:var(--muted);margin-top:1rem;font-size:0.95rem}
+
+    /* Section */
+    section{padding:5rem 0}
+    section h2{font-size:2rem;margin-bottom:0.5rem;font-weight:600}
+    section .section-sub{color:var(--muted);margin-bottom:2rem}
+    .section-dark{background:var(--bg2)}
+
+    /* Demo Panel */
+    .demo-panel{background:var(--card);border:1px solid var(--border2);border-radius:12px;overflow:hidden}
+    .demo-header{display:flex;align-items:center;gap:0.5rem;padding:1rem 1.5rem;border-bottom:1px solid var(--border);background:var(--bg2)}
+    .demo-dot{width:12px;height:12px;border-radius:50%;background:var(--border2)}
+    .demo-dot.red{background:#ff5f56}.demo-dot.yellow{background:#ffbd2e}.demo-dot.green{background:#27ca40}
+    .demo-title{margin-left:1rem;color:var(--muted);font-size:0.85rem;font-family:'JetBrains Mono',monospace}
+    .demo-body{padding:1.5rem}
     .demo-controls{display:flex;gap:0.75rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
-    select,button{background:var(--bg);color:var(--fg);border:1px solid var(--border);padding:0.5rem 0.75rem;border-radius:4px;font-family:inherit;font-size:0.9rem;cursor:pointer}
-    select{min-width:140px}
-    button{background:var(--accent);color:var(--bg);font-weight:bold}button:hover{opacity:0.9}
-    button.secondary{background:var(--bg);color:var(--accent);border-color:var(--accent)}
-    .result{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1rem;overflow-x:auto;max-height:400px;overflow-y:auto}
-    .result pre{white-space:pre-wrap;font-size:0.85rem}
-    .risk-LOW{color:var(--accent)}.risk-MODERATE{color:#ffd93d}.risk-ELEVATED{color:#ff9f43}.risk-HIGH{color:var(--accent2)}.risk-CRITICAL{color:#ff0000}
-    .links{display:flex;gap:1rem;justify-content:center;margin:1.5rem 0;flex-wrap:wrap}
-    .links a{color:var(--fg);text-decoration:none;padding:0.4rem 0.8rem;border:1px solid var(--border);border-radius:4px;font-size:0.9rem}
-    .links a:hover{border-color:var(--accent)}
-    footer{text-align:center;padding:2rem 0;color:var(--muted);border-top:1px solid var(--border);margin-top:2rem;font-size:0.9rem}
-    footer a{color:var(--accent);text-decoration:none}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.75rem;margin:1.5rem 0}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:1rem}
-    .card h3{color:var(--accent);margin-bottom:0.3rem;font-size:0.95rem}
-    .card p{font-size:0.8rem;color:var(--muted)}
-    .stats{display:flex;gap:2rem;justify-content:center;margin:1rem 0;flex-wrap:wrap}
-    .stat{text-align:center}
-    .stat-num{font-size:2rem;color:var(--accent);font-weight:bold}
-    .stat-label{font-size:0.8rem;color:var(--muted)}
-    .endpoints{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem;margin:1.5rem 0}
-    .endpoints h3{color:var(--accent);margin-bottom:0.75rem;font-size:1rem}
-    .endpoints code{color:var(--accent);font-size:0.85rem}
-    .endpoints ul{list-style:none;font-size:0.85rem}
-    .endpoints li{padding:0.3rem 0;border-bottom:1px solid var(--border)}
-    .endpoints li:last-child{border:none}
+    .demo-select{background:var(--bg);color:var(--fg);border:1px solid var(--border2);padding:0.6rem 1rem;border-radius:6px;font-family:inherit;font-size:0.9rem;cursor:pointer;min-width:150px}
+    .demo-select:focus{outline:none;border-color:var(--accent)}
+    .demo-btn{padding:0.6rem 1.25rem;border-radius:6px;font-weight:600;font-size:0.9rem;cursor:pointer;transition:all 0.2s;border:1px solid transparent}
+    .demo-btn-primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+    .demo-btn-secondary{background:transparent;color:var(--accent);border-color:var(--accent)}
+    .demo-btn-small{padding:0.4rem 0.75rem;font-size:0.8rem;background:var(--bg);color:var(--muted);border-color:var(--border2)}
+    .demo-result{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:1.25rem;min-height:200px;max-height:400px;overflow:auto}
+    .demo-vs{color:var(--muted);font-size:0.9rem}
+    .demo-actions{margin-left:auto;display:flex;gap:0.5rem}
+
+    /* Risk colors */
+    .risk-LOW{color:var(--accent)}.risk-MODERATE{color:var(--warn)}.risk-ELEVATED{color:#ff9f43}.risk-HIGH{color:var(--accent2)}.risk-CRITICAL{color:#ff0000}
+
+    /* API Docs */
+    .endpoint-grid{display:grid;gap:1rem}
+    .endpoint{background:var(--card);border:1px solid var(--border2);border-radius:8px;overflow:hidden}
+    .endpoint-header{display:flex;align-items:center;gap:1rem;padding:1rem 1.25rem;cursor:pointer;transition:background 0.2s}
+    .endpoint-header:hover{background:var(--bg2)}
+    .endpoint-method{font-family:'JetBrains Mono',monospace;font-size:0.75rem;font-weight:600;padding:0.25rem 0.5rem;border-radius:4px}
+    .method-get{background:rgba(77,159,255,0.15);color:var(--blue)}
+    .method-post{background:rgba(0,255,136,0.15);color:var(--accent)}
+    .endpoint-path{font-family:'JetBrains Mono',monospace;font-size:0.9rem}
+    .endpoint-desc{color:var(--muted);font-size:0.85rem;margin-left:auto}
+    .endpoint-body{display:none;padding:1.25rem;border-top:1px solid var(--border);background:var(--bg2)}
+    .endpoint.open .endpoint-body{display:block}
+    .endpoint-chevron{color:var(--muted);transition:transform 0.2s;margin-left:0.5rem}
+    .endpoint.open .endpoint-chevron{transform:rotate(90deg)}
+
+    /* Code block */
+    .code-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:0}
+    .code-tab{padding:0.6rem 1rem;font-size:0.8rem;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;font-family:'JetBrains Mono',monospace}
+    .code-tab:hover{color:var(--fg)}
+    .code-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+    .code-block{background:var(--bg);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:1rem 0}
+    .code-block pre{padding:1rem;overflow-x:auto;font-size:0.85rem;line-height:1.5}
+    .code-block code{color:var(--fg)}
+    .code-copy{position:absolute;top:0.5rem;right:0.5rem;padding:0.4rem 0.6rem;font-size:0.75rem;background:var(--card);border:1px solid var(--border2);border-radius:4px;color:var(--muted);cursor:pointer}
+    .code-copy:hover{color:var(--accent);border-color:var(--accent)}
+    .code-wrapper{position:relative}
+
+    /* Categories Grid */
+    .cat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
+    .cat-card{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:1.25rem}
+    .cat-card h4{color:var(--accent);font-size:0.95rem;margin-bottom:0.5rem;font-weight:600}
+    .cat-card p{color:var(--muted);font-size:0.85rem}
+
+    /* Use Cases */
+    .use-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem}
+    .use-card{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:1.75rem}
+    .use-icon{width:48px;height:48px;background:rgba(0,255,136,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;font-size:1.5rem}
+    .use-card h4{font-size:1.1rem;margin-bottom:0.5rem}
+    .use-card p{color:var(--muted);font-size:0.9rem}
+
+    /* Table */
+    .api-table{width:100%;border-collapse:collapse;font-size:0.9rem}
+    .api-table th,.api-table td{padding:1rem;text-align:left;border-bottom:1px solid var(--border)}
+    .api-table th{color:var(--muted);font-weight:500;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em}
+    .api-table code{background:var(--bg);padding:0.2rem 0.5rem;border-radius:4px;font-size:0.85rem}
+
+    /* Footer */
+    footer{padding:4rem 0;border-top:1px solid var(--border);background:var(--bg2)}
+    .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem}
+    .footer-brand p{color:var(--muted);font-size:0.9rem;margin-top:0.5rem}
+    .footer-col h5{color:var(--muted);font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:1rem}
+    .footer-col a{display:block;color:var(--fg);text-decoration:none;font-size:0.9rem;padding:0.3rem 0;transition:color 0.2s}
+    .footer-col a:hover{color:var(--accent)}
+    .footer-bottom{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:0.85rem}
+
+    @media(max-width:768px){
+      .hero h1{font-size:2.5rem}
+      .hero-stats{flex-wrap:wrap;gap:1.5rem}
+      .nav-links{display:none}
+      .footer-grid{grid-template-columns:1fr}
+      .demo-controls{flex-direction:column;align-items:stretch}
+      .demo-actions{margin-left:0;margin-top:0.5rem}
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1><span>Divergence</span> Engine</h1>
-      <div class="version">v0.3.0</div>
-      <p class="tagline">Quantify worldview divergence. Predict conflict. Find alignment.</p>
-      <div class="stats">
-        <div class="stat"><div class="stat-num">40+</div><div class="stat-label">Actors</div></div>
-        <div class="stat"><div class="stat-num">12</div><div class="stat-label">Categories</div></div>
-        <div class="stat"><div class="stat-num">10</div><div class="stat-label">Endpoints</div></div>
-      </div>
-      <div class="formula">
-        <code>Φ(A,B) = D<sub>KL</sub>(A‖B) + D<sub>KL</sub>(B‖A)</code>
-      </div>
-      <div class="links">
+  <nav>
+    <div class="container">
+      <a href="#" class="logo">Φ DIVERGENCE</a>
+      <div class="nav-links">
+        <a href="#demo">Demo</a>
+        <a href="#api">API</a>
+        <a href="#theory">Theory</a>
+        <a href="#use-cases">Use Cases</a>
         <a href="https://github.com/aphoticshaman/nucleation-wasm">GitHub</a>
-        <a href="https://zenodo.org/records/17766946">Paper</a>
-        <a href="/actors">/actors</a>
-        <a href="/cluster">/cluster</a>
-        <a href="/matrix">/matrix</a>
       </div>
-    </header>
+    </div>
+  </nav>
 
-    <section class="demo">
-      <h2>// Live Analysis</h2>
-      <div class="demo-controls">
-        <select id="actorA">
-          <optgroup label="Major Powers">
-            <option value="USA">USA</option><option value="CHN" selected>China</option><option value="RUS">Russia</option>
-          </optgroup>
-          <optgroup label="Europe">
-            <option value="EUR">EU</option><option value="GBR">UK</option><option value="DEU">Germany</option><option value="FRA">France</option><option value="POL">Poland</option><option value="UKR">Ukraine</option>
-          </optgroup>
-          <optgroup label="Middle East">
-            <option value="ISR">Israel</option><option value="IRN">Iran</option><option value="SAU">Saudi</option><option value="TUR">Turkey</option><option value="EGY">Egypt</option><option value="SYR">Syria</option>
-          </optgroup>
-          <optgroup label="Asia-Pacific">
-            <option value="JPN">Japan</option><option value="KOR">S. Korea</option><option value="PRK">N. Korea</option><option value="TWN">Taiwan</option><option value="IND">India</option><option value="PAK">Pakistan</option><option value="AUS">Australia</option><option value="IDN">Indonesia</option><option value="VNM">Vietnam</option><option value="PHL">Philippines</option>
-          </optgroup>
-          <optgroup label="Americas">
-            <option value="CAN">Canada</option><option value="MEX">Mexico</option><option value="BRA">Brazil</option><option value="ARG">Argentina</option><option value="VEN">Venezuela</option>
-          </optgroup>
-          <optgroup label="Africa">
-            <option value="ZAF">S. Africa</option><option value="NGA">Nigeria</option><option value="ETH">Ethiopia</option>
-          </optgroup>
-        </select>
-        <span style="color:var(--muted)">vs</span>
-        <select id="actorB">
-          <optgroup label="Major Powers">
-            <option value="USA" selected>USA</option><option value="CHN">China</option><option value="RUS">Russia</option>
-          </optgroup>
-          <optgroup label="Europe">
-            <option value="EUR">EU</option><option value="GBR">UK</option><option value="DEU">Germany</option><option value="FRA">France</option><option value="POL">Poland</option><option value="UKR">Ukraine</option>
-          </optgroup>
-          <optgroup label="Middle East">
-            <option value="ISR">Israel</option><option value="IRN">Iran</option><option value="SAU">Saudi</option><option value="TUR">Turkey</option><option value="EGY">Egypt</option><option value="SYR">Syria</option>
-          </optgroup>
-          <optgroup label="Asia-Pacific">
-            <option value="JPN">Japan</option><option value="KOR">S. Korea</option><option value="PRK">N. Korea</option><option value="TWN">Taiwan</option><option value="IND">India</option><option value="PAK">Pakistan</option><option value="AUS">Australia</option><option value="IDN">Indonesia</option><option value="VNM">Vietnam</option><option value="PHL">Philippines</option>
-          </optgroup>
-          <optgroup label="Americas">
-            <option value="CAN">Canada</option><option value="MEX">Mexico</option><option value="BRA">Brazil</option><option value="ARG">Argentina</option><option value="VEN">Venezuela</option>
-          </optgroup>
-          <optgroup label="Africa">
-            <option value="ZAF">S. Africa</option><option value="NGA">Nigeria</option><option value="ETH">Ethiopia</option>
-          </optgroup>
-        </select>
-        <button onclick="runPredict()">Predict</button>
-        <button class="secondary" onclick="runExplain()">Explain</button>
-        <button class="secondary" onclick="runAlign()">Align</button>
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">v0.3.0 • Open Source • Edge-Deployed</div>
+      <h1><span>Divergence</span> Engine</h1>
+      <p class="hero-sub">Information-theoretic conflict prediction. Quantify worldview divergence between state actors using symmetric KL divergence.</p>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="hero-stat-num">40+</div><div class="hero-stat-label">State Actors</div></div>
+        <div class="hero-stat"><div class="hero-stat-num">12</div><div class="hero-stat-label">Priority Categories</div></div>
+        <div class="hero-stat"><div class="hero-stat-num">10</div><div class="hero-stat-label">API Endpoints</div></div>
+        <div class="hero-stat"><div class="hero-stat-num">&lt;50ms</div><div class="hero-stat-label">Latency</div></div>
       </div>
-      <div class="result"><pre id="output">// Select actors and click an action</pre></div>
-    </section>
-
-    <div class="endpoints">
-      <h3>API Endpoints</h3>
-      <ul>
-        <li><code>POST /predict</code> - Escalation prediction between two actors</li>
-        <li><code>POST /explain</code> - Detailed breakdown of WHY actors diverge</li>
-        <li><code>POST /align</code> - Find cooperation opportunities + mediators</li>
-        <li><code>POST /compare</code> - Compare one actor to all others</li>
-        <li><code>GET /actors</code> - All 40+ actors with metadata</li>
-        <li><code>GET /cluster</code> - Actors grouped by worldview type</li>
-        <li><code>GET /matrix</code> - Full N×N divergence matrix</li>
-        <li><code>GET /regions</code> - Actors by geographic region</li>
-      </ul>
+      <div class="hero-cta">
+        <a href="#demo" class="btn btn-primary">Try Live Demo</a>
+        <a href="#api" class="btn btn-secondary">API Reference</a>
+      </div>
     </div>
+  </section>
 
-    <h3 style="text-align:center;margin:1.5rem 0 0.75rem;color:var(--accent)">12 Compression Categories</h3>
-    <div class="grid">
-      <div class="card"><h3>Multilateralism</h3><p>UN, treaties, institutions</p></div>
-      <div class="card"><h3>Economic</h3><p>Trade, investment, supply chains</p></div>
-      <div class="card"><h3>Military</h3><p>Defense, alliances, deterrence</p></div>
-      <div class="card"><h3>Territorial</h3><p>Borders, maritime, separatism</p></div>
-      <div class="card"><h3>Ideology</h3><p>Regime type, values, soft power</p></div>
-      <div class="card"><h3>Domestic</h3><p>Internal politics, stability</p></div>
-      <div class="card"><h3>Resources</h3><p>Energy, minerals, food, water</p></div>
-      <div class="card"><h3>Technology</h3><p>AI, semiconductors, cyber</p></div>
-      <div class="card"><h3>Historical</h3><p>Past conflicts, grievances</p></div>
-      <div class="card"><h3>Hegemony</h3><p>Sphere of influence, buffers</p></div>
-      <div class="card"><h3>Humanitarian</h3><p>Human rights, refugees, NGOs</p></div>
-      <div class="card"><h3>Nuclear</h3><p>WMD, nonproliferation, MAD</p></div>
+  <div class="formula-section">
+    <div class="formula-box">
+      <code>Φ(A,B) = D<sub>KL</sub>(A‖B) + D<sub>KL</sub>(B‖A)</code>
+      <p>Symmetric KL divergence quantifies how differently two actors compress geopolitical information. Higher Φ = greater conflict potential.</p>
     </div>
-
-    <footer>
-      <p><a href="https://twitter.com/Benthic_Shadow">@Benthic_Shadow</a> • Rust/WASM • Cloudflare Edge • MIT License</p>
-    </footer>
   </div>
+
+  <section id="demo" class="section-dark">
+    <div class="container">
+      <h2>Live Analysis</h2>
+      <p class="section-sub">Select two actors and analyze their worldview divergence in real-time.</p>
+
+      <div class="demo-panel">
+        <div class="demo-header">
+          <span class="demo-dot red"></span>
+          <span class="demo-dot yellow"></span>
+          <span class="demo-dot green"></span>
+          <span class="demo-title">divergence-engine</span>
+        </div>
+        <div class="demo-body">
+          <div class="demo-controls">
+            <select id="actorA" class="demo-select">
+              <optgroup label="Major Powers"><option value="USA">United States</option><option value="CHN" selected>China</option><option value="RUS">Russia</option></optgroup>
+              <optgroup label="Europe"><option value="EUR">European Union</option><option value="GBR">United Kingdom</option><option value="DEU">Germany</option><option value="FRA">France</option><option value="POL">Poland</option><option value="UKR">Ukraine</option></optgroup>
+              <optgroup label="Middle East"><option value="ISR">Israel</option><option value="IRN">Iran</option><option value="SAU">Saudi Arabia</option><option value="ARE">UAE</option><option value="TUR">Turkey</option><option value="EGY">Egypt</option><option value="SYR">Syria</option><option value="QAT">Qatar</option></optgroup>
+              <optgroup label="Asia-Pacific"><option value="JPN">Japan</option><option value="KOR">South Korea</option><option value="PRK">North Korea</option><option value="TWN">Taiwan</option><option value="IND">India</option><option value="PAK">Pakistan</option><option value="AUS">Australia</option><option value="IDN">Indonesia</option><option value="VNM">Vietnam</option><option value="PHL">Philippines</option><option value="SGP">Singapore</option><option value="MYS">Malaysia</option></optgroup>
+              <optgroup label="Central Asia"><option value="KAZ">Kazakhstan</option><option value="UZB">Uzbekistan</option><option value="AFG">Afghanistan</option></optgroup>
+              <optgroup label="Americas"><option value="CAN">Canada</option><option value="MEX">Mexico</option><option value="BRA">Brazil</option><option value="ARG">Argentina</option><option value="VEN">Venezuela</option></optgroup>
+              <optgroup label="Africa"><option value="ZAF">South Africa</option><option value="NGA">Nigeria</option><option value="ETH">Ethiopia</option></optgroup>
+              <optgroup label="Oceania"><option value="NZL">New Zealand</option></optgroup>
+            </select>
+            <span class="demo-vs">vs</span>
+            <select id="actorB" class="demo-select">
+              <optgroup label="Major Powers"><option value="USA" selected>United States</option><option value="CHN">China</option><option value="RUS">Russia</option></optgroup>
+              <optgroup label="Europe"><option value="EUR">European Union</option><option value="GBR">United Kingdom</option><option value="DEU">Germany</option><option value="FRA">France</option><option value="POL">Poland</option><option value="UKR">Ukraine</option></optgroup>
+              <optgroup label="Middle East"><option value="ISR">Israel</option><option value="IRN">Iran</option><option value="SAU">Saudi Arabia</option><option value="ARE">UAE</option><option value="TUR">Turkey</option><option value="EGY">Egypt</option><option value="SYR">Syria</option><option value="QAT">Qatar</option></optgroup>
+              <optgroup label="Asia-Pacific"><option value="JPN">Japan</option><option value="KOR">South Korea</option><option value="PRK">North Korea</option><option value="TWN">Taiwan</option><option value="IND">India</option><option value="PAK">Pakistan</option><option value="AUS">Australia</option><option value="IDN">Indonesia</option><option value="VNM">Vietnam</option><option value="PHL">Philippines</option><option value="SGP">Singapore</option><option value="MYS">Malaysia</option></optgroup>
+              <optgroup label="Central Asia"><option value="KAZ">Kazakhstan</option><option value="UZB">Uzbekistan</option><option value="AFG">Afghanistan</option></optgroup>
+              <optgroup label="Americas"><option value="CAN">Canada</option><option value="MEX">Mexico</option><option value="BRA">Brazil</option><option value="ARG">Argentina</option><option value="VEN">Venezuela</option></optgroup>
+              <optgroup label="Africa"><option value="ZAF">South Africa</option><option value="NGA">Nigeria</option><option value="ETH">Ethiopia</option></optgroup>
+              <optgroup label="Oceania"><option value="NZL">New Zealand</option></optgroup>
+            </select>
+            <button class="demo-btn demo-btn-primary" onclick="runPredict()">Predict</button>
+            <button class="demo-btn demo-btn-secondary" onclick="runExplain()">Explain</button>
+            <button class="demo-btn demo-btn-secondary" onclick="runAlign()">Align</button>
+            <div class="demo-actions">
+              <button class="demo-btn demo-btn-small" onclick="copyJSON()">Copy JSON</button>
+              <button class="demo-btn demo-btn-small" onclick="exportJSON()">Export</button>
+            </div>
+          </div>
+          <div class="demo-result" id="output">
+            <p style="color:var(--muted)">Select actors and click an action to analyze...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="api">
+    <div class="container">
+      <h2>API Reference</h2>
+      <p class="section-sub">RESTful endpoints for programmatic access. All responses in JSON.</p>
+
+      <div class="endpoint-grid">
+        <div class="endpoint" onclick="toggleEndpoint(this)">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-post">POST</span>
+            <span class="endpoint-path">/predict</span>
+            <span class="endpoint-desc">Escalation prediction between two actors</span>
+            <span class="endpoint-chevron">▶</span>
+          </div>
+          <div class="endpoint-body">
+            <div class="code-tabs">
+              <span class="code-tab active" onclick="showTab(event,'curl1')">cURL</span>
+              <span class="code-tab" onclick="showTab(event,'py1')">Python</span>
+              <span class="code-tab" onclick="showTab(event,'js1')">JavaScript</span>
+            </div>
+            <div class="code-wrapper">
+              <div class="code-block" id="curl1">
+<pre><code>curl -X POST https://divergence-api.nucleation.workers.dev/predict \\
+  -H "Content-Type: application/json" \\
+  -d '{"actor_a": "CHN", "actor_b": "USA"}'</code></pre>
+              </div>
+              <div class="code-block" id="py1" style="display:none">
+<pre><code>import requests
+
+response = requests.post(
+    "https://divergence-api.nucleation.workers.dev/predict",
+    json={"actor_a": "CHN", "actor_b": "USA"}
+)
+data = response.json()
+print(f"Risk Level: {data['prediction']['risk_level']}")
+print(f"Φ: {data['metrics']['phi']}")</code></pre>
+              </div>
+              <div class="code-block" id="js1" style="display:none">
+<pre><code>const response = await fetch(
+  "https://divergence-api.nucleation.workers.dev/predict",
+  {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ actor_a: "CHN", actor_b: "USA" })
+  }
+);
+const data = await response.json();
+console.log(\`Risk: \${data.prediction.risk_level}\`);</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" onclick="toggleEndpoint(this)">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-post">POST</span>
+            <span class="endpoint-path">/explain</span>
+            <span class="endpoint-desc">Detailed breakdown of divergence drivers</span>
+            <span class="endpoint-chevron">▶</span>
+          </div>
+          <div class="endpoint-body">
+            <div class="code-block">
+<pre><code>curl -X POST https://divergence-api.nucleation.workers.dev/explain \\
+  -H "Content-Type: application/json" \\
+  -d '{"actor_a": "ISR", "actor_b": "IRN"}'
+
+# Returns per-category divergence contribution, top drivers, rationales</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" onclick="toggleEndpoint(this)">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-post">POST</span>
+            <span class="endpoint-path">/align</span>
+            <span class="endpoint-desc">Find cooperation opportunities and mediators</span>
+            <span class="endpoint-chevron">▶</span>
+          </div>
+          <div class="endpoint-body">
+            <div class="code-block">
+<pre><code>curl -X POST https://divergence-api.nucleation.workers.dev/align \\
+  -H "Content-Type: application/json" \\
+  -d '{"actor_a": "USA", "actor_b": "CHN"}'
+
+# Returns aligned categories, tension points, potential mediators</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" onclick="toggleEndpoint(this)">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-post">POST</span>
+            <span class="endpoint-path">/compare</span>
+            <span class="endpoint-desc">Compare one actor to all others</span>
+            <span class="endpoint-chevron">▶</span>
+          </div>
+          <div class="endpoint-body">
+            <div class="code-block">
+<pre><code>curl -X POST https://divergence-api.nucleation.workers.dev/compare \\
+  -H "Content-Type: application/json" \\
+  -d '{"actor": "TWN"}'
+
+# Returns most aligned, most divergent, potential allies/rivals</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" onclick="toggleEndpoint(this)">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-get">GET</span>
+            <span class="endpoint-path">/actors</span>
+            <span class="endpoint-desc">All actors with metadata and distributions</span>
+            <span class="endpoint-chevron">▶</span>
+          </div>
+          <div class="endpoint-body">
+            <div class="code-block">
+<pre><code>curl https://divergence-api.nucleation.workers.dev/actors
+
+# Returns 40+ actors with names, regions, entropy scores</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" onclick="toggleEndpoint(this)">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-get">GET</span>
+            <span class="endpoint-path">/matrix</span>
+            <span class="endpoint-desc">Full N×N divergence matrix</span>
+            <span class="endpoint-chevron">▶</span>
+          </div>
+          <div class="endpoint-body">
+            <div class="code-block">
+<pre><code>curl https://divergence-api.nucleation.workers.dev/matrix
+
+# Returns complete pairwise Φ values, most aligned/divergent pairs</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" onclick="toggleEndpoint(this)">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-get">GET</span>
+            <span class="endpoint-path">/cluster</span>
+            <span class="endpoint-desc">Actors grouped by worldview similarity</span>
+            <span class="endpoint-chevron">▶</span>
+          </div>
+          <div class="endpoint-body">
+            <div class="code-block">
+<pre><code>curl https://divergence-api.nucleation.workers.dev/cluster
+
+# Returns clusters: Western Liberal, Authoritarian, Regional Powers, etc.</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" onclick="toggleEndpoint(this)">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-get">GET</span>
+            <span class="endpoint-path">/regions</span>
+            <span class="endpoint-desc">Actors by geographic region</span>
+            <span class="endpoint-chevron">▶</span>
+          </div>
+          <div class="endpoint-body">
+            <div class="code-block">
+<pre><code>curl https://divergence-api.nucleation.workers.dev/regions
+
+# Returns actors grouped by region with top priorities</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="theory" class="section-dark">
+    <div class="container">
+      <h2>Compression Categories</h2>
+      <p class="section-sub">Each actor's worldview is modeled as a probability distribution over 12 strategic priorities.</p>
+
+      <div class="cat-grid">
+        <div class="cat-card"><h4>Diplomatic Multilateralism</h4><p>UN engagement, treaty compliance, international institutions</p></div>
+        <div class="cat-card"><h4>Economic Interdependence</h4><p>Trade relationships, investment flows, supply chain dependencies</p></div>
+        <div class="cat-card"><h4>Military Security</h4><p>Defense posture, alliance commitments, deterrence strategy</p></div>
+        <div class="cat-card"><h4>Territorial Sovereignty</h4><p>Border disputes, maritime claims, separatist movements</p></div>
+        <div class="cat-card"><h4>Ideological Legitimacy</h4><p>Regime type justification, values projection, soft power</p></div>
+        <div class="cat-card"><h4>Domestic Stability</h4><p>Internal political cohesion, protest management, regime security</p></div>
+        <div class="cat-card"><h4>Resource Access</h4><p>Energy security, critical minerals, food and water</p></div>
+        <div class="cat-card"><h4>Technological Competition</h4><p>AI, semiconductors, cyber capabilities, space</p></div>
+        <div class="cat-card"><h4>Historical Grievance</h4><p>Past conflicts, colonial legacy, national humiliation narratives</p></div>
+        <div class="cat-card"><h4>Regional Hegemony</h4><p>Sphere of influence, buffer states, neighborhood control</p></div>
+        <div class="cat-card"><h4>Humanitarian Norms</h4><p>Human rights priorities, refugee policy, NGO engagement</p></div>
+        <div class="cat-card"><h4>Nuclear Deterrence</h4><p>WMD doctrine, nonproliferation stance, MAD calculations</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="use-cases">
+    <div class="container">
+      <h2>Applications</h2>
+      <p class="section-sub">From strategic analysis to automated monitoring.</p>
+
+      <div class="use-grid">
+        <div class="use-card">
+          <div class="use-icon">🛡️</div>
+          <h4>Defense & Intelligence</h4>
+          <p>Threat assessment, alliance stability analysis, wargame scenario generation, early warning indicators.</p>
+        </div>
+        <div class="use-card">
+          <div class="use-icon">💹</div>
+          <h4>Financial Risk</h4>
+          <p>Geopolitical risk scoring for portfolios, sovereign debt analysis, supply chain exposure assessment.</p>
+        </div>
+        <div class="use-card">
+          <div class="use-icon">🏛️</div>
+          <h4>Policy Analysis</h4>
+          <p>Diplomatic strategy optimization, mediation opportunity identification, sanctions impact modeling.</p>
+        </div>
+        <div class="use-card">
+          <div class="use-icon">📊</div>
+          <h4>Research</h4>
+          <p>Quantitative IR studies, foreign policy pattern analysis, conflict forecasting model training data.</p>
+        </div>
+        <div class="use-card">
+          <div class="use-icon">🤖</div>
+          <h4>Automated Monitoring</h4>
+          <p>Real-time divergence tracking, threshold alerting, trend detection across actor pairs.</p>
+        </div>
+        <div class="use-card">
+          <div class="use-icon">🎓</div>
+          <h4>Education</h4>
+          <p>Interactive IR teaching tool, scenario exploration, strategic studies coursework.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-dark">
+    <div class="container">
+      <h2>Risk Classification</h2>
+      <p class="section-sub">Escalation probability mapped to operational risk levels.</p>
+
+      <table class="api-table">
+        <thead>
+          <tr><th>Φ Range</th><th>Risk Level</th><th>Interpretation</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>0.0 - 0.5</code></td><td><span class="risk-LOW">LOW</span></td><td>Aligned worldviews, routine diplomacy sufficient</td></tr>
+          <tr><td><code>0.5 - 1.0</code></td><td><span class="risk-MODERATE">MODERATE</span></td><td>Notable differences, enhanced engagement recommended</td></tr>
+          <tr><td><code>1.0 - 2.0</code></td><td><span class="risk-ELEVATED">ELEVATED</span></td><td>Significant divergence, active conflict prevention needed</td></tr>
+          <tr><td><code>2.0 - 4.0</code></td><td><span class="risk-HIGH">HIGH</span></td><td>Severe misalignment, crisis management protocols</td></tr>
+          <tr><td><code>&gt; 4.0</code></td><td><span class="risk-CRITICAL">CRITICAL</span></td><td>Fundamental incompatibility, deterrence-focused posture</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <span class="logo">Φ DIVERGENCE</span>
+          <p>Open-source geopolitical conflict prediction engine. Built with Rust, deployed on Cloudflare Edge.</p>
+        </div>
+        <div class="footer-col">
+          <h5>Resources</h5>
+          <a href="https://github.com/aphoticshaman/nucleation-wasm">GitHub</a>
+          <a href="https://zenodo.org/records/17766946">Research Paper</a>
+          <a href="/actors">Actor Database</a>
+          <a href="/matrix">Divergence Matrix</a>
+        </div>
+        <div class="footer-col">
+          <h5>API</h5>
+          <a href="#api">Documentation</a>
+          <a href="/health">Health Check</a>
+          <a href="/cluster">Clustering</a>
+          <a href="/regions">Regions</a>
+        </div>
+        <div class="footer-col">
+          <h5>Connect</h5>
+          <a href="https://twitter.com/Benthic_Shadow">Twitter</a>
+          <a href="https://github.com/aphoticshaman">GitHub</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>MIT License • Built for the open research community</span>
+        <span>Rust/WASM • Cloudflare Workers</span>
+      </div>
+    </div>
+  </footer>
+
   <script>
     const BASE='';
+    let lastData=null;
+    let lastType='';
+
+    function formatPredict(d){
+      return \`<div style="font-size:0.9rem">
+<h3 style="color:var(--accent);margin:0 0 1rem;font-weight:600">\${d.actor_a.name} vs \${d.actor_b.name}</h3>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-bottom:1.5rem">
+  <div style="background:var(--card);padding:1rem;border-radius:8px;text-align:center">
+    <div style="color:var(--muted);font-size:0.8rem;margin-bottom:0.25rem">Φ (Divergence)</div>
+    <div style="font-size:2rem;font-weight:700;font-family:'JetBrains Mono',monospace">\${d.metrics.phi}</div>
+  </div>
+  <div style="background:var(--card);padding:1rem;border-radius:8px;text-align:center">
+    <div style="color:var(--muted);font-size:0.8rem;margin-bottom:0.25rem">Risk Level</div>
+    <div class="risk-\${d.prediction.risk_level}" style="font-size:1.5rem;font-weight:700">\${d.prediction.risk_level}</div>
+  </div>
+  <div style="background:var(--card);padding:1rem;border-radius:8px;text-align:center">
+    <div style="color:var(--muted);font-size:0.8rem;margin-bottom:0.25rem">Escalation Prob</div>
+    <div style="font-size:2rem;font-weight:700;font-family:'JetBrains Mono',monospace">\${(d.prediction.escalation_probability*100).toFixed(1)}%</div>
+  </div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;font-size:0.85rem;color:var(--muted)">
+  <div>Jensen-Shannon: <span style="color:var(--fg)">\${d.metrics.jensen_shannon}</span></div>
+  <div>Hellinger: <span style="color:var(--fg)">\${d.metrics.hellinger}</span></div>
+  <div>KL(A→B): <span style="color:var(--fg)">\${d.metrics.kl_a_b}</span></div>
+  <div>KL(B→A): <span style="color:var(--fg)">\${d.metrics.kl_b_a}</span></div>
+</div>
+</div>\`;
+    }
+
+    function formatExplain(d){
+      const top3=d.top_divergence_drivers.map(t=>
+        \`<div style="background:var(--card);padding:0.75rem 1rem;border-radius:6px;margin-bottom:0.5rem;border-left:3px solid var(--accent)">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <strong style="color:var(--fg)">\${t.category.replace(/_/g,' ')}</strong>
+            <span style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:0.85rem">\${t.percent_of_total}%</span>
+          </div>
+          <div style="color:var(--muted);font-size:0.85rem;margin-top:0.25rem">
+            \${d.actor_a.code}: \${(t.weight_a*100).toFixed(0)}% vs \${d.actor_b.code}: \${(t.weight_b*100).toFixed(0)}%
+          </div>
+        </div>\`).join('');
+      return \`<div style="font-size:0.9rem">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+  <h3 style="color:var(--accent);margin:0;font-weight:600">\${d.actor_a.name} vs \${d.actor_b.name}</h3>
+  <div><span style="font-family:'JetBrains Mono',monospace">Φ=\${d.total_phi}</span> <span class="risk-\${d.risk_level}">[\${d.risk_level}]</span></div>
+</div>
+<div style="color:var(--muted);font-size:0.8rem;margin-bottom:0.5rem;padding:0.75rem;background:var(--card);border-radius:6px">
+  <strong>\${d.actor_a.code}:</strong> \${d.actor_a.rationale}
+</div>
+<div style="color:var(--muted);font-size:0.8rem;margin-bottom:1rem;padding:0.75rem;background:var(--card);border-radius:6px">
+  <strong>\${d.actor_b.code}:</strong> \${d.actor_b.rationale}
+</div>
+<h4 style="color:var(--fg);font-size:0.9rem;margin-bottom:0.75rem">Top Divergence Drivers</h4>
+\${top3}
+</div>\`;
+    }
+
+    function formatAlign(d){
+      const aligned=d.aligned_categories.slice(0,5).map(c=>
+        \`<span style="background:rgba(0,255,136,0.15);color:var(--accent);padding:0.3rem 0.6rem;border-radius:4px;margin:0.2rem;display:inline-block;font-size:0.85rem">\${c.category.replace(/_/g,' ')}</span>\`).join('');
+      const tensions=d.tension_points.slice(0,4).map(c=>
+        \`<span style="background:rgba(255,107,107,0.15);color:var(--accent2);padding:0.3rem 0.6rem;border-radius:4px;margin:0.2rem;display:inline-block;font-size:0.85rem">\${c.category.replace(/_/g,' ')}</span>\`).join('');
+      const mediators=d.potential_mediators.slice(0,5).map(m=>
+        \`<span style="background:var(--card);padding:0.3rem 0.6rem;border-radius:4px;margin:0.2rem;display:inline-block;font-size:0.85rem">\${m.name}</span>\`).join('');
+      return \`<div style="font-size:0.9rem">
+<h3 style="color:var(--accent);margin:0 0 1.5rem;font-weight:600">\${d.actor_a.name} ↔ \${d.actor_b.name}</h3>
+<div style="margin-bottom:1.25rem">
+  <h4 style="color:var(--accent);font-size:0.85rem;margin-bottom:0.5rem">✓ Cooperation Opportunities</h4>
+  <div>\${aligned||'<span style="color:var(--muted)">None identified</span>'}</div>
+</div>
+<div style="margin-bottom:1.25rem">
+  <h4 style="color:var(--accent2);font-size:0.85rem;margin-bottom:0.5rem">⚠ Tension Points</h4>
+  <div>\${tensions||'<span style="color:var(--muted)">None identified</span>'}</div>
+</div>
+<div>
+  <h4 style="color:var(--muted);font-size:0.85rem;margin-bottom:0.5rem">Potential Mediators</h4>
+  <div>\${mediators||'<span style="color:var(--muted)">None identified</span>'}</div>
+</div>
+</div>\`;
+    }
+
     async function runPredict(){
       const a=document.getElementById('actorA').value,b=document.getElementById('actorB').value;
+      document.getElementById('output').innerHTML='<p style="color:var(--muted)">Analyzing...</p>';
       try{
         const r=await fetch(BASE+'/predict',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({actor_a:a,actor_b:b})});
-        const d=await r.json();
-        document.getElementById('output').innerHTML=JSON.stringify(d,null,2).replace(/"(LOW|MODERATE|ELEVATED|HIGH|CRITICAL)"/g,'<span class="risk-\$1">"\$1"</span>');
-      }catch(e){document.getElementById('output').textContent='Error: '+e.message}
+        lastData=await r.json();lastType='predict';
+        document.getElementById('output').innerHTML=formatPredict(lastData);
+      }catch(e){document.getElementById('output').innerHTML='<p style="color:var(--accent2)">Error: '+e.message+'</p>'}
     }
+
     async function runExplain(){
       const a=document.getElementById('actorA').value,b=document.getElementById('actorB').value;
+      document.getElementById('output').innerHTML='<p style="color:var(--muted)">Analyzing...</p>';
       try{
         const r=await fetch(BASE+'/explain',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({actor_a:a,actor_b:b})});
-        const d=await r.json();
-        document.getElementById('output').innerHTML=JSON.stringify(d,null,2).replace(/"(LOW|MODERATE|ELEVATED|HIGH|CRITICAL)"/g,'<span class="risk-\$1">"\$1"</span>');
-      }catch(e){document.getElementById('output').textContent='Error: '+e.message}
+        lastData=await r.json();lastType='explain';
+        document.getElementById('output').innerHTML=formatExplain(lastData);
+      }catch(e){document.getElementById('output').innerHTML='<p style="color:var(--accent2)">Error: '+e.message+'</p>'}
     }
+
     async function runAlign(){
       const a=document.getElementById('actorA').value,b=document.getElementById('actorB').value;
+      document.getElementById('output').innerHTML='<p style="color:var(--muted)">Analyzing...</p>';
       try{
         const r=await fetch(BASE+'/align',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({actor_a:a,actor_b:b})});
-        const d=await r.json();
-        document.getElementById('output').innerHTML=JSON.stringify(d,null,2);
-      }catch(e){document.getElementById('output').textContent='Error: '+e.message}
+        lastData=await r.json();lastType='align';
+        document.getElementById('output').innerHTML=formatAlign(lastData);
+      }catch(e){document.getElementById('output').innerHTML='<p style="color:var(--accent2)">Error: '+e.message+'</p>'}
     }
+
+    function copyJSON(){
+      if(!lastData)return;
+      navigator.clipboard.writeText(JSON.stringify(lastData,null,2));
+      event.target.textContent='Copied!';setTimeout(()=>event.target.textContent='Copy JSON',1500);
+    }
+
+    function exportJSON(){
+      if(!lastData)return;
+      const blob=new Blob([JSON.stringify(lastData,null,2)],{type:'application/json'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;a.download=\`divergence-\${lastType}-\${lastData.actor_a?.code||'data'}-\${lastData.actor_b?.code||''}.json\`;
+      a.click();URL.revokeObjectURL(url);
+    }
+
+    function toggleEndpoint(el){
+      el.classList.toggle('open');
+    }
+
+    function showTab(e,id){
+      const parent=e.target.closest('.endpoint-body');
+      parent.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+      parent.querySelectorAll('.code-block').forEach(b=>b.style.display='none');
+      e.target.classList.add('active');
+      document.getElementById(id).style.display='block';
+    }
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{
+      a.addEventListener('click',e=>{
+        e.preventDefault();
+        document.querySelector(a.getAttribute('href'))?.scrollIntoView({behavior:'smooth'});
+      });
+    });
+
     runPredict();
   </script>
 </body>
