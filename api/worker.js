@@ -36,6 +36,103 @@ const CATEGORIES = [
   "historical_grievance"
 ];
 
+// Landing page HTML
+const LANDING_PAGE_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Divergence Engine - Conflict Prediction API</title>
+  <meta name="description" content="Predict conflict from divergent worldviews. 100x faster than Python.">
+  <style>
+    :root{--bg:#0a0a0a;--fg:#e0e0e0;--accent:#00ff88;--accent2:#ff6b6b;--muted:#666;--card:#141414;--border:#2a2a2a}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'SF Mono','Fira Code',monospace;background:var(--bg);color:var(--fg);line-height:1.6;min-height:100vh}
+    .container{max-width:900px;margin:0 auto;padding:2rem}
+    header{text-align:center;padding:4rem 0}
+    h1{font-size:2.5rem;margin-bottom:1rem}h1 span{color:var(--accent)}
+    .tagline{color:var(--muted);font-size:1.1rem;margin-bottom:2rem}
+    .formula{background:var(--card);border:1px solid var(--border);padding:1.5rem;border-radius:8px;font-size:1.2rem;margin:2rem 0}
+    .formula code{color:var(--accent)}
+    .demo{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:2rem;margin:3rem 0}
+    .demo h2{margin-bottom:1.5rem;color:var(--accent)}
+    .demo-controls{display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}
+    select,button{background:var(--bg);color:var(--fg);border:1px solid var(--border);padding:0.75rem 1rem;border-radius:4px;font-family:inherit;font-size:1rem;cursor:pointer}
+    button{background:var(--accent);color:var(--bg);font-weight:bold}button:hover{opacity:0.9}
+    .result{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1rem;overflow-x:auto}
+    .result pre{white-space:pre-wrap}
+    .risk-LOW{color:var(--accent)}.risk-MODERATE{color:#ffd93d}.risk-ELEVATED{color:#ff9f43}.risk-HIGH{color:var(--accent2)}.risk-CRITICAL{color:#ff0000}
+    .links{display:flex;gap:2rem;justify-content:center;margin:2rem 0;flex-wrap:wrap}
+    .links a{color:var(--fg);text-decoration:none;padding:0.5rem 1rem;border:1px solid var(--border);border-radius:4px}
+    .links a:hover{border-color:var(--accent)}
+    footer{text-align:center;padding:3rem 0;color:var(--muted);border-top:1px solid var(--border);margin-top:3rem}
+    footer a{color:var(--accent);text-decoration:none}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin:2rem 0}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.5rem}
+    .card h3{color:var(--accent);margin-bottom:0.5rem}
+    .card p{font-size:0.9rem;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1><span>Divergence</span> Engine</h1>
+      <p class="tagline">Predict conflict from divergent worldviews.<br>100x faster than Python. Deployable anywhere.</p>
+      <div class="formula">
+        <code>Φ(A,B) = D<sub>KL</sub>(A‖B) + D<sub>KL</sub>(B‖A)</code><br><br>
+        <em>Conflict is compression divergence. Peace is alignment.</em>
+      </div>
+      <div class="links">
+        <a href="https://github.com/aphoticshaman/nucleation-wasm">GitHub</a>
+        <a href="https://zenodo.org/records/17766946">Paper</a>
+        <a href="/actors">API: /actors</a>
+      </div>
+    </header>
+    <section class="demo">
+      <h2>// Live Demo</h2>
+      <div class="demo-controls">
+        <select id="actorA"><option value="USA">USA</option><option value="RUS">Russia</option><option value="CHN" selected>China</option><option value="IRN">Iran</option><option value="PRK">N. Korea</option><option value="TWN">Taiwan</option></select>
+        <span style="color:var(--muted);padding:0.75rem">vs</span>
+        <select id="actorB"><option value="USA" selected>USA</option><option value="RUS">Russia</option><option value="CHN">China</option><option value="IRN">Iran</option><option value="PRK">N. Korea</option><option value="TWN">Taiwan</option></select>
+        <button onclick="runPrediction()">Analyze</button>
+      </div>
+      <div class="result"><pre id="output">// Click Analyze</pre></div>
+    </section>
+    <h2 style="text-align:center;margin-bottom:1rem">Industry Applications</h2>
+    <div class="grid">
+      <div class="card"><h3>Finance</h3><p>Portfolio regime detection, counterparty risk, sentiment divergence.</p></div>
+      <div class="card"><h3>Defense</h3><p>Adversary modeling, coalition stability, 6-12mo early warning.</p></div>
+      <div class="card"><h3>Cybersecurity</h3><p>Threat actor profiling, insider detection, posture drift.</p></div>
+      <div class="card"><h3>Supply Chain</h3><p>Supplier risk, vendor health, demand forecasting.</p></div>
+    </div>
+    <footer>
+      <p>Built by <a href="https://twitter.com/Benthic_Shadow">@Benthic_Shadow</a></p>
+      <p style="margin-top:0.5rem">Rust/WASM • Cloudflare Edge • MIT License</p>
+    </footer>
+  </div>
+  <script>
+    const E=1e-10,A={USA:[.35,.25,.15,.1,.05,.04,.03,.02,.01],RUS:[.2,.2,.18,.15,.1,.08,.05,.03,.01],CHN:[.3,.22,.18,.12,.08,.05,.03,.01,.01],IRN:[.25,.2,.18,.15,.1,.06,.04,.01,.01],PRK:[.18,.18,.17,.16,.12,.09,.06,.03,.01],TWN:[.32,.24,.16,.11,.07,.05,.03,.01,.01]};
+    const norm=d=>{const s=d.reduce((a,b)=>a+b,0);return d.map(x=>(x+E)/(s+E*d.length))};
+    const kl=(p,q)=>p.reduce((s,pi,i)=>s+Math.max(pi,E)*Math.log(Math.max(pi,E)/Math.max(q[i],E)),0)/Math.LN2;
+    function runPrediction(){
+      const a=document.getElementById('actorA').value,b=document.getElementById('actorB').value;
+      const p=norm(A[a]),q=norm(A[b]);
+      const phi=kl(p,q)+kl(q,p),m=p.map((pi,i)=>0.5*(pi+q[i])),js=0.5*kl(p,m)+0.5*kl(q,m);
+      const prob=1/(1+Math.exp(-(0.5*phi-0.15)));
+      let risk="LOW";if(phi>=0.5)risk="MODERATE";if(phi>=1)risk="ELEVATED";if(phi>=2)risk="HIGH";if(phi>=4)risk="CRITICAL";
+      document.getElementById('output').innerHTML=\`{
+  "dyad": "\${a} ↔ \${b}",
+  "phi": \${phi.toFixed(4)},
+  "jensen_shannon": \${js.toFixed(4)},
+  "escalation_probability": \${prob.toFixed(3)},
+  "risk_level": "<span class='risk-\${risk}'>\${risk}</span>"
+}\`;
+    }
+    runPrediction();
+  </script>
+</body>
+</html>`;
+
 // Core math - pure JS implementation (WASM version is 100x faster for batch)
 const EPSILON = 1e-10;
 
@@ -225,16 +322,8 @@ export default {
         return handleHealth();
       }
       if (path === "/" && request.method === "GET") {
-        return jsonResponse({
-          name: "Divergence Engine API",
-          version: "1.0.0",
-          endpoints: {
-            "POST /predict": "Predict escalation between two actors",
-            "POST /divergence": "Compute divergence between custom distributions",
-            "GET /actors": "List available actors",
-            "GET /health": "Health check",
-          },
-          docs: "https://github.com/aphoticshaman/nucleation-wasm",
+        return new Response(LANDING_PAGE_HTML, {
+          headers: { "Content-Type": "text/html; charset=utf-8" },
         });
       }
 
