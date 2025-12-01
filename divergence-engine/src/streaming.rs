@@ -14,11 +14,9 @@
 //!                    [CompressionScheme Updates]
 //! ```
 
-#![cfg(feature = "streaming")]
-
 use crate::error::{DivergenceError, Result};
 use crate::model::CompressionDynamicsModel;
-use crate::scheme::{ConflictPotential, RiskLevel};
+use crate::scheme::RiskLevel;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

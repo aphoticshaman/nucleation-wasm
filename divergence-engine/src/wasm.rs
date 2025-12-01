@@ -21,10 +21,8 @@
 //! console.log(`P(escalation) = ${prediction.probability}`);
 //! ```
 
-#![cfg(feature = "wasm")]
-
 use crate::model::{CompressionDynamicsModel, ModelConfig};
-use crate::scheme::{CompressionScheme, ConflictPotential, RiskLevel};
+use crate::scheme::{CompressionScheme, ConflictPotential};
 use wasm_bindgen::prelude::*;
 
 /// Initialize the WASM module (call once at startup)
