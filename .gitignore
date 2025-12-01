@@ -1,14 +1,74 @@
-__pycache__/
-*.pyc
-*.pyo
-.pytest_cache/
-experiments/
-*.egg-info/
+# =========================
+# Divergence Engine
+# =========================
 
-# Rust
-target/
-*.rs.bk
+# ----- Rust -----
+/target/
+**/*.rs.bk
+Cargo.lock
+*.pdb
 
-# WASM build output
-pkg/
+# ----- WASM -----
+/pkg/
+*.wasm
+*.wat
+
+# ----- Node/JS -----
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ----- Python (research docs) -----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+venv/
+.venv/
+
+# ----- Environment & Secrets -----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+secrets/
+.secrets
+
+# ----- IDE -----
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ----- OS -----
+.DS_Store
+Thumbs.db
+
+# ----- Build & Deploy -----
+dist/
+build/
+out/
+.vercel
+.netlify
+.wrangler/
+
+# ----- Logs & Coverage -----
+*.log
+logs/
+coverage/
+*.lcov
+
+# ----- Misc -----
+*.bak
+*.tmp
+.cache/

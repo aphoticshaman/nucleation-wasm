@@ -1,0 +1,18 @@
+name = "divergence-api"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# Your Cloudflare account (run: wrangler login)
+# account_id = "your-account-id"
+
+[vars]
+ENVIRONMENT = "production"
+
+# Custom domain (optional - set up in Cloudflare dashboard)
+# routes = [
+#   { pattern = "api.divergence.io/*", zone_name = "divergence.io" }
+# ]
+
+# Rate limiting (optional - configure in dashboard)
+# [rate_limiting]
+# enabled = true
