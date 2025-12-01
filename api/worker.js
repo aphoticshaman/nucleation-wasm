@@ -989,6 +989,969 @@ console.log(\`Risk: \${data.prediction.risk_level}\`);</code></pre>
 </html>`;
 
 // Core math - pure JS implementation (WASM version is 100x faster for batch)
+
+// Engineer page HTML - Technical Deep Dive
+const ENGINEER_PAGE_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Engineer - Divergence Engine Technical Documentation</title>
+  <meta name="description" content="Technical documentation for the Divergence Engine. Architecture, mathematical foundations, data methodology, and integration guides.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#000;--bg2:#0a0a0a;--card:#111;--border:#1a1a1a;--border2:#252525;--fg:#e8e8e8;--muted:#666;--accent:#00ff88;--accent2:#ff6b6b;--warn:#ffd93d;--blue:#4d9fff}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--fg);line-height:1.7}
+    code,pre,.mono{font-family:'JetBrains Mono',monospace}
+    .container{max-width:900px;margin:0 auto;padding:0 2rem}
+    nav{position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);z-index:1000;padding:1rem 0}
+    nav .container{display:flex;align-items:center;justify-content:space-between;max-width:1200px}
+    .logo{font-weight:700;font-size:1.1rem;color:var(--accent);text-decoration:none;font-family:'JetBrains Mono',monospace}
+    .nav-links{display:flex;gap:2rem}
+    .nav-links a{color:var(--muted);text-decoration:none;font-size:0.9rem;transition:color 0.2s}
+    .nav-links a:hover,.nav-links a.active{color:var(--accent)}
+    .hero{padding:8rem 0 3rem;border-bottom:1px solid var(--border)}
+    .hero h1{font-size:2.5rem;margin-bottom:1rem;font-weight:700}
+    .hero p{color:var(--muted);font-size:1.1rem}
+    .toc{position:fixed;right:2rem;top:6rem;width:200px;font-size:0.85rem}
+    .toc h4{color:var(--muted);margin-bottom:1rem;text-transform:uppercase;letter-spacing:0.05em;font-size:0.75rem}
+    .toc a{display:block;color:var(--muted);text-decoration:none;padding:0.3rem 0;border-left:2px solid var(--border);padding-left:1rem;transition:all 0.2s}
+    .toc a:hover,.toc a.active{color:var(--accent);border-left-color:var(--accent)}
+    section{padding:4rem 0;border-bottom:1px solid var(--border)}
+    section:last-of-type{border-bottom:none}
+    h2{font-size:1.75rem;margin-bottom:1.5rem;color:var(--fg)}
+    h3{font-size:1.25rem;margin:2rem 0 1rem;color:var(--accent)}
+    h4{font-size:1rem;margin:1.5rem 0 0.75rem;color:var(--fg)}
+    p{margin-bottom:1rem;color:var(--fg)}
+    .code-block{background:var(--card);border:1px solid var(--border2);border-radius:8px;overflow:hidden;margin:1.5rem 0}
+    .code-block-header{background:var(--bg2);padding:0.75rem 1rem;border-bottom:1px solid var(--border);font-size:0.8rem;color:var(--muted);display:flex;justify-content:space-between}
+    .code-block pre{padding:1rem;overflow-x:auto;font-size:0.85rem;line-height:1.6;margin:0}
+    .code-block code{color:var(--fg)}
+    .info-box{background:var(--card);border:1px solid var(--border2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:1.25rem;margin:1.5rem 0}
+    .info-box.warn{border-left-color:var(--warn)}
+    .info-box h5{color:var(--accent);margin-bottom:0.5rem;font-size:0.9rem}
+    .info-box.warn h5{color:var(--warn)}
+    .info-box p{margin:0;font-size:0.9rem;color:var(--muted)}
+    .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin:1.5rem 0}
+    .metric{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:1.25rem}
+    .metric h5{color:var(--accent);font-size:0.85rem;margin-bottom:0.5rem}
+    .metric p{color:var(--muted);font-size:0.85rem;margin:0}
+    table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:0.9rem}
+    th,td{padding:0.75rem 1rem;text-align:left;border-bottom:1px solid var(--border)}
+    th{color:var(--muted);font-weight:500;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em}
+    td code{background:var(--bg);padding:0.2rem 0.4rem;border-radius:4px;font-size:0.8rem}
+    .formula{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:1.5rem;margin:1.5rem 0;text-align:center}
+    .formula code{font-size:1.2rem;color:var(--accent)}
+    .formula p{margin-top:1rem;color:var(--muted);font-size:0.9rem}
+    .arch-diagram{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:2rem;margin:1.5rem 0}
+    .arch-row{display:flex;gap:1rem;margin-bottom:1rem;justify-content:center}
+    .arch-box{background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:1rem 1.5rem;text-align:center;font-size:0.85rem}
+    .arch-box.highlight{border-color:var(--accent);color:var(--accent)}
+    .arch-arrow{color:var(--muted);font-size:1.5rem}
+    footer{padding:3rem 0;border-top:1px solid var(--border);text-align:center;color:var(--muted);font-size:0.85rem}
+    footer a{color:var(--accent);text-decoration:none}
+    @media(max-width:1100px){.toc{display:none}}
+    @media(max-width:768px){.nav-links{display:none}.hero h1{font-size:2rem}}
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <a href="/" class="logo">Φ DIVERGENCE</a>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/demo">Demo</a>
+        <a href="/engineer" class="active">Engineer</a>
+        <a href="https://github.com/aphoticshaman/nucleation-wasm">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="toc">
+    <h4>On This Page</h4>
+    <a href="#architecture">Architecture</a>
+    <a href="#mathematics">Mathematics</a>
+    <a href="#methodology">Methodology</a>
+    <a href="#schema">Schema</a>
+    <a href="#performance">Performance</a>
+    <a href="#integration">Integration</a>
+  </div>
+
+  <div class="container">
+    <div class="hero">
+      <h1>Technical Documentation</h1>
+      <p>Architecture, mathematical foundations, and integration patterns for the Divergence Engine.</p>
+    </div>
+
+    <section id="architecture">
+      <h2>System Architecture</h2>
+      <p>The Divergence Engine is deployed as a serverless edge function on Cloudflare Workers, providing global low-latency access with zero cold start overhead.</p>
+
+      <div class="arch-diagram">
+        <div class="arch-row">
+          <div class="arch-box">Client Request</div>
+          <span class="arch-arrow">→</span>
+          <div class="arch-box highlight">Cloudflare Edge</div>
+          <span class="arch-arrow">→</span>
+          <div class="arch-box">Worker Runtime</div>
+        </div>
+        <div class="arch-row">
+          <div class="arch-box">V8 Isolate</div>
+          <span class="arch-arrow">→</span>
+          <div class="arch-box highlight">Divergence Engine</div>
+          <span class="arch-arrow">→</span>
+          <div class="arch-box">JSON Response</div>
+        </div>
+      </div>
+
+      <h3>Technology Stack</h3>
+      <div class="metric-grid">
+        <div class="metric"><h5>Runtime</h5><p>Cloudflare Workers (V8 Isolates)</p></div>
+        <div class="metric"><h5>Core Engine</h5><p>Rust compiled to WebAssembly</p></div>
+        <div class="metric"><h5>API Layer</h5><p>JavaScript/ES Modules</p></div>
+        <div class="metric"><h5>Deployment</h5><p>280+ edge locations globally</p></div>
+      </div>
+
+      <h3>Dual Implementation</h3>
+      <p>The engine provides both pure JavaScript and Rust/WASM implementations:</p>
+
+      <table>
+        <thead><tr><th>Implementation</th><th>Use Case</th><th>Performance</th></tr></thead>
+        <tbody>
+          <tr><td><code>JavaScript</code></td><td>API endpoints, single comparisons</td><td>~1ms per comparison</td></tr>
+          <tr><td><code>Rust/WASM</code></td><td>Batch processing, matrix computation</td><td>~0.01ms per comparison</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box">
+        <h5>Why Both?</h5>
+        <p>JavaScript handles routing and simple requests with minimal overhead. WASM is invoked for computationally intensive operations like full matrix generation (1,600+ comparisons).</p>
+      </div>
+    </section>
+
+    <section id="mathematics">
+      <h2>Mathematical Foundations</h2>
+      <p>The Divergence Engine quantifies worldview divergence using information-theoretic measures from probability theory.</p>
+
+      <h3>Kullback-Leibler Divergence</h3>
+      <p>KL divergence measures how one probability distribution P differs from a reference distribution Q:</p>
+
+      <div class="formula">
+        <code>D<sub>KL</sub>(P‖Q) = Σ P(i) · log(P(i) / Q(i))</code>
+        <p>Measured in bits when using log base 2</p>
+      </div>
+
+      <div class="info-box warn">
+        <h5>Asymmetry</h5>
+        <p>KL divergence is asymmetric: D<sub>KL</sub>(P‖Q) ≠ D<sub>KL</sub>(Q‖P). This means "how surprised P is by Q" differs from "how surprised Q is by P".</p>
+      </div>
+
+      <h3>Symmetric KL Divergence (Φ)</h3>
+      <p>To get a symmetric measure suitable for pairwise comparison, we sum both directions:</p>
+
+      <div class="formula">
+        <code>Φ(A,B) = D<sub>KL</sub>(A‖B) + D<sub>KL</sub>(B‖A)</code>
+        <p>Our primary metric for conflict prediction</p>
+      </div>
+
+      <h3>Additional Metrics</h3>
+      <table>
+        <thead><tr><th>Metric</th><th>Formula</th><th>Range</th><th>Interpretation</th></tr></thead>
+        <tbody>
+          <tr><td><code>Jensen-Shannon</code></td><td>½D<sub>KL</sub>(P‖M) + ½D<sub>KL</sub>(Q‖M)</td><td>[0, 1]</td><td>Bounded, symmetric divergence</td></tr>
+          <tr><td><code>Hellinger</code></td><td>√(½Σ(√P - √Q)²)</td><td>[0, 1]</td><td>Geometric distance between distributions</td></tr>
+          <tr><td><code>Entropy</code></td><td>-Σ P(i) · log P(i)</td><td>[0, log(n)]</td><td>Uncertainty/diversity of priorities</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Escalation Probability Model</h3>
+      <p>We map divergence to escalation probability using a logistic function:</p>
+
+      <div class="code-block">
+        <div class="code-block-header">escalation_model.js</div>
+        <pre><code>function escalationProbability(phi, dPhiDt = 0, communication = 0.5) {
+  const alpha = 0.5;  // Divergence weight
+  const beta = 0.3;   // Communication dampening
+  const gamma = 0.8;  // Rate sensitivity
+
+  const logit = alpha * phi + gamma * Math.max(0, dPhiDt) - beta * communication;
+  return 1 / (1 + Math.exp(-logit));
+}</code></pre>
+      </div>
+
+      <p>Parameters:</p>
+      <ul style="margin-left:1.5rem;color:var(--muted)">
+        <li><strong>phi</strong>: Current symmetric KL divergence</li>
+        <li><strong>dPhiDt</strong>: Rate of change (positive = worsening)</li>
+        <li><strong>communication</strong>: Diplomatic engagement level [0-1]</li>
+      </ul>
+    </section>
+
+    <section id="methodology">
+      <h2>Data Methodology</h2>
+      <p>Actor compression schemes are derived from multiple empirical sources and expert assessment.</p>
+
+      <h3>12 Compression Categories</h3>
+      <p>Each actor's worldview is modeled as a probability distribution over these strategic priorities:</p>
+
+      <table>
+        <thead><tr><th>Index</th><th>Category</th><th>What It Captures</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td><code>diplomatic_multilateralism</code></td><td>UN engagement, treaty compliance, institutional participation</td></tr>
+          <tr><td>1</td><td><code>economic_interdependence</code></td><td>Trade priority, investment flows, supply chain reliance</td></tr>
+          <tr><td>2</td><td><code>military_security</code></td><td>Defense spending, alliance value, deterrence doctrine</td></tr>
+          <tr><td>3</td><td><code>territorial_sovereignty</code></td><td>Border disputes, maritime claims, separatism response</td></tr>
+          <tr><td>4</td><td><code>ideological_legitimacy</code></td><td>Regime justification, values projection, soft power</td></tr>
+          <tr><td>5</td><td><code>domestic_stability</code></td><td>Regime security, protest management, internal cohesion</td></tr>
+          <tr><td>6</td><td><code>resource_access</code></td><td>Energy security, critical minerals, food/water</td></tr>
+          <tr><td>7</td><td><code>technological_competition</code></td><td>AI, semiconductors, cyber, space capabilities</td></tr>
+          <tr><td>8</td><td><code>historical_grievance</code></td><td>Past conflicts, colonial legacy, national humiliation</td></tr>
+          <tr><td>9</td><td><code>regional_hegemony</code></td><td>Sphere of influence, buffer states, neighborhood control</td></tr>
+          <tr><td>10</td><td><code>humanitarian_norms</code></td><td>Human rights priority, refugee policy, NGO engagement</td></tr>
+          <tr><td>11</td><td><code>nuclear_deterrence</code></td><td>WMD doctrine, nonproliferation stance, MAD calculations</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Distribution Derivation</h3>
+      <p>Actor weights are synthesized from:</p>
+      <div class="metric-grid">
+        <div class="metric"><h5>GDELT Analysis</h5><p>Event coding patterns from 250M+ news events</p></div>
+        <div class="metric"><h5>Policy Documents</h5><p>Official foreign policy doctrine, white papers</p></div>
+        <div class="metric"><h5>Expert Assessment</h5><p>RAND, CSIS, Brookings, CFR evaluations</p></div>
+        <div class="metric"><h5>Behavior Patterns</h5><p>Historical action analysis, revealed preferences</p></div>
+      </div>
+
+      <h3>Example: USA vs China</h3>
+      <div class="code-block">
+        <div class="code-block-header">Distribution Comparison</div>
+        <pre><code>Category                    USA     CHN     Gap
+─────────────────────────────────────────────────
+diplomatic_multilateralism  0.12    0.08    0.04
+economic_interdependence    0.15    0.18    0.03
+military_security           0.18    0.12    0.06  ← USA higher
+territorial_sovereignty     0.05    0.14    0.09  ← CHN much higher
+ideological_legitimacy      0.12    0.10    0.02
+domestic_stability          0.08    0.10    0.02
+resource_access             0.06    0.08    0.02
+technological_competition   0.10    0.12    0.02
+historical_grievance        0.02    0.04    0.02
+regional_hegemony           0.05    0.02    0.03
+humanitarian_norms          0.04    0.01    0.03
+nuclear_deterrence          0.03    0.01    0.02</code></pre>
+      </div>
+    </section>
+
+    <section id="schema">
+      <h2>API Schema Reference</h2>
+
+      <h3>Actor Object</h3>
+      <div class="code-block">
+        <div class="code-block-header">TypeScript</div>
+        <pre><code>interface Actor {
+  code: string;           // ISO 3166-1 alpha-3 or custom
+  name: string;           // Full actor name
+  region: string;         // Geographic/political grouping
+  distribution: number[]; // 12-element probability vector
+  rationale: string;      // Explanation of weights
+}</code></pre>
+      </div>
+
+      <h3>Prediction Response</h3>
+      <div class="code-block">
+        <div class="code-block-header">TypeScript</div>
+        <pre><code>interface PredictResponse {
+  actor_a: { code: string; name: string };
+  actor_b: { code: string; name: string };
+  metrics: {
+    phi: number;           // Symmetric KL divergence
+    jensen_shannon: number;
+    hellinger: number;
+    kl_a_b: number;        // Directional KL
+    kl_b_a: number;
+  };
+  prediction: {
+    escalation_probability: number; // 0-1
+    risk_level: "LOW" | "MODERATE" | "ELEVATED" | "HIGH" | "CRITICAL";
+    communication_level: number;
+  };
+  categories: string[];    // Category labels
+  timestamp: string;       // ISO 8601
+}</code></pre>
+      </div>
+
+      <h3>Risk Level Thresholds</h3>
+      <table>
+        <thead><tr><th>Φ Range</th><th>Risk Level</th><th>Color Code</th></tr></thead>
+        <tbody>
+          <tr><td><code>0.0 - 0.5</code></td><td>LOW</td><td style="color:var(--accent)">#00ff88</td></tr>
+          <tr><td><code>0.5 - 1.0</code></td><td>MODERATE</td><td style="color:var(--warn)">#ffd93d</td></tr>
+          <tr><td><code>1.0 - 2.0</code></td><td>ELEVATED</td><td style="color:#ff9f43">#ff9f43</td></tr>
+          <tr><td><code>2.0 - 4.0</code></td><td>HIGH</td><td style="color:var(--accent2)">#ff6b6b</td></tr>
+          <tr><td><code>> 4.0</code></td><td>CRITICAL</td><td style="color:#ff0000">#ff0000</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="performance">
+      <h2>Performance Characteristics</h2>
+
+      <div class="metric-grid">
+        <div class="metric"><h5>Cold Start</h5><p>0ms (V8 isolates)</p></div>
+        <div class="metric"><h5>P50 Latency</h5><p>~15ms (edge)</p></div>
+        <div class="metric"><h5>P99 Latency</h5><p>~45ms (edge)</p></div>
+        <div class="metric"><h5>Throughput</h5><p>10,000+ req/sec</p></div>
+      </div>
+
+      <h3>Endpoint Benchmarks</h3>
+      <table>
+        <thead><tr><th>Endpoint</th><th>Computation</th><th>Response Size</th></tr></thead>
+        <tbody>
+          <tr><td><code>/predict</code></td><td>~0.5ms</td><td>~500 bytes</td></tr>
+          <tr><td><code>/explain</code></td><td>~1ms</td><td>~2KB</td></tr>
+          <tr><td><code>/compare</code></td><td>~5ms (40 comparisons)</td><td>~8KB</td></tr>
+          <tr><td><code>/matrix</code></td><td>~50ms (1600 comparisons)</td><td>~150KB</td></tr>
+          <tr><td><code>/cluster</code></td><td>~100ms</td><td>~10KB</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="integration">
+      <h2>Integration Patterns</h2>
+
+      <h3>Python SDK Pattern</h3>
+      <div class="code-block">
+        <div class="code-block-header">divergence_client.py</div>
+        <pre><code>import requests
+from dataclasses import dataclass
+from typing import List, Dict
+
+@dataclass
+class DivergenceResult:
+    phi: float
+    risk_level: str
+    escalation_prob: float
+
+class DivergenceClient:
+    BASE_URL = "https://divergence-api.nucleation.workers.dev"
+
+    def predict(self, actor_a: str, actor_b: str) -> DivergenceResult:
+        resp = requests.post(
+            f"{self.BASE_URL}/predict",
+            json={"actor_a": actor_a, "actor_b": actor_b}
+        )
+        data = resp.json()
+        return DivergenceResult(
+            phi=data["metrics"]["phi"],
+            risk_level=data["prediction"]["risk_level"],
+            escalation_prob=data["prediction"]["escalation_probability"]
+        )
+
+    def batch_compare(self, actor: str) -> List[Dict]:
+        resp = requests.post(
+            f"{self.BASE_URL}/compare",
+            json={"actor": actor}
+        )
+        return resp.json()["all_comparisons"]
+
+# Usage
+client = DivergenceClient()
+result = client.predict("USA", "CHN")
+print(f"USA-CHN Risk: {result.risk_level} (Φ={result.phi})")</code></pre>
+      </div>
+
+      <h3>Webhook Integration</h3>
+      <div class="code-block">
+        <div class="code-block-header">threshold_alert.js</div>
+        <pre><code>// Monitor actor pairs and alert on threshold breach
+async function monitorPairs(pairs, threshold = 2.0) {
+  for (const [a, b] of pairs) {
+    const resp = await fetch("https://divergence-api.nucleation.workers.dev/predict", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ actor_a: a, actor_b: b })
+    });
+    const { metrics, prediction } = await resp.json();
+
+    if (metrics.phi > threshold) {
+      await sendAlert({
+        pair: \`\${a}-\${b}\`,
+        phi: metrics.phi,
+        risk: prediction.risk_level,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+}
+
+// Run every hour
+monitorPairs([["USA", "CHN"], ["ISR", "IRN"], ["RUS", "UKR"]]);</code></pre>
+      </div>
+
+      <h3>Rate Limits</h3>
+      <div class="info-box">
+        <h5>Fair Use Policy</h5>
+        <p>No hard rate limits currently enforced. For high-volume usage (>10,000 req/day), please reach out to discuss dedicated deployment options.</p>
+      </div>
+    </section>
+
+    <footer>
+      <p><a href="/">Φ Divergence Engine</a> • <a href="https://github.com/aphoticshaman/nucleation-wasm">GitHub</a> • MIT License</p>
+    </footer>
+  </div>
+
+  <script>
+    // Highlight TOC on scroll
+    const sections = document.querySelectorAll('section[id]');
+    const tocLinks = document.querySelectorAll('.toc a');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const top = section.offsetTop - 100;
+        if (scrollY >= top) current = section.getAttribute('id');
+      });
+      tocLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>`;
+
+// Demo page HTML - Full Interactive Console
+const DEMO_PAGE_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo Console - Divergence Engine</title>
+  <meta name="description" content="Interactive demo console for the Divergence Engine API. Test all endpoints, visualize divergence matrices, and explore actor clusters.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#000;--bg2:#0a0a0a;--card:#111;--border:#1a1a1a;--border2:#252525;--fg:#e8e8e8;--muted:#666;--accent:#00ff88;--accent2:#ff6b6b;--warn:#ffd93d;--blue:#4d9fff}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--fg);line-height:1.6;min-height:100vh}
+    code,pre,.mono{font-family:'JetBrains Mono',monospace}
+    nav{position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);z-index:1000;padding:1rem 2rem}
+    nav .nav-inner{display:flex;align-items:center;justify-content:space-between;max-width:1400px;margin:0 auto}
+    .logo{font-weight:700;font-size:1.1rem;color:var(--accent);text-decoration:none;font-family:'JetBrains Mono',monospace}
+    .nav-links{display:flex;gap:2rem}
+    .nav-links a{color:var(--muted);text-decoration:none;font-size:0.9rem;transition:color 0.2s}
+    .nav-links a:hover,.nav-links a.active{color:var(--accent)}
+
+    .console-layout{display:grid;grid-template-columns:280px 1fr 350px;gap:0;min-height:100vh;padding-top:60px}
+    .sidebar{background:var(--bg2);border-right:1px solid var(--border);padding:1.5rem;overflow-y:auto}
+    .main-panel{padding:1.5rem;overflow-y:auto}
+    .output-panel{background:var(--bg2);border-left:1px solid var(--border);padding:1.5rem;overflow-y:auto}
+
+    .sidebar h3{color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem}
+    .endpoint-list{display:flex;flex-direction:column;gap:0.25rem}
+    .endpoint-item{display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0.75rem;border-radius:6px;cursor:pointer;transition:all 0.15s;border:1px solid transparent}
+    .endpoint-item:hover{background:var(--card);border-color:var(--border2)}
+    .endpoint-item.active{background:var(--card);border-color:var(--accent)}
+    .endpoint-item .method{font-size:0.65rem;font-weight:600;padding:0.15rem 0.4rem;border-radius:3px;font-family:'JetBrains Mono',monospace}
+    .method-get{background:rgba(77,159,255,0.2);color:var(--blue)}
+    .method-post{background:rgba(0,255,136,0.2);color:var(--accent)}
+    .endpoint-item .path{font-size:0.85rem;font-family:'JetBrains Mono',monospace}
+
+    .actors-section{margin-top:2rem}
+    .actor-chips{display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.75rem}
+    .actor-chip{font-size:0.75rem;padding:0.25rem 0.5rem;background:var(--card);border:1px solid var(--border2);border-radius:4px;cursor:pointer;transition:all 0.15s}
+    .actor-chip:hover{border-color:var(--accent);color:var(--accent)}
+    .actor-chip.selected{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+
+    .main-panel h2{font-size:1.5rem;margin-bottom:0.5rem}
+    .main-panel .desc{color:var(--muted);margin-bottom:1.5rem}
+
+    .input-group{margin-bottom:1.25rem}
+    .input-group label{display:block;font-size:0.85rem;color:var(--muted);margin-bottom:0.5rem}
+    .input-group select,.input-group input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:6px;padding:0.7rem 1rem;color:var(--fg);font-family:inherit;font-size:0.9rem}
+    .input-group select:focus,.input-group input:focus{outline:none;border-color:var(--accent)}
+    .input-row{display:grid;grid-template-columns:1fr auto 1fr;gap:1rem;align-items:end}
+    .input-row .vs{color:var(--muted);padding-bottom:0.7rem}
+
+    .run-btn{width:100%;padding:0.85rem;background:var(--accent);color:var(--bg);border:none;border-radius:6px;font-weight:600;font-size:0.95rem;cursor:pointer;transition:all 0.15s;margin-top:1rem}
+    .run-btn:hover{opacity:0.9;transform:translateY(-1px)}
+    .run-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+
+    .output-panel h3{color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center}
+    .output-actions{display:flex;gap:0.5rem}
+    .output-actions button{font-size:0.7rem;padding:0.3rem 0.6rem;background:var(--card);border:1px solid var(--border2);border-radius:4px;color:var(--muted);cursor:pointer}
+    .output-actions button:hover{border-color:var(--accent);color:var(--accent)}
+    .output-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:1rem;min-height:400px;max-height:calc(100vh - 180px);overflow:auto}
+    .output-box pre{font-size:0.8rem;line-height:1.5;white-space:pre-wrap}
+    .output-box .loading{color:var(--muted);font-style:italic}
+
+    .result-card{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:1rem;margin-bottom:1rem}
+    .result-card h4{color:var(--accent);font-size:0.95rem;margin-bottom:0.5rem}
+    .result-metric{display:flex;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid var(--border);font-size:0.85rem}
+    .result-metric:last-child{border-bottom:none}
+    .result-metric .label{color:var(--muted)}
+    .result-metric .value{font-family:'JetBrains Mono',monospace}
+
+    .risk-LOW{color:var(--accent)}.risk-MODERATE{color:var(--warn)}.risk-ELEVATED{color:#ff9f43}.risk-HIGH{color:var(--accent2)}.risk-CRITICAL{color:#ff0000}
+
+    .matrix-viz{margin-top:1rem}
+    .matrix-row{display:flex}
+    .matrix-cell{width:20px;height:20px;font-size:0.5rem;display:flex;align-items:center;justify-content:center}
+
+    .cluster-viz{margin-top:1rem}
+    .cluster-group{margin-bottom:1rem}
+    .cluster-group h5{color:var(--accent);font-size:0.85rem;margin-bottom:0.5rem}
+    .cluster-actors{display:flex;flex-wrap:wrap;gap:0.3rem}
+
+    .tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1rem}
+    .tab{padding:0.6rem 1rem;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;font-size:0.85rem;transition:all 0.15s}
+    .tab:hover{color:var(--fg)}
+    .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+    @media(max-width:1200px){
+      .console-layout{grid-template-columns:1fr}
+      .sidebar,.output-panel{display:none}
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="logo">Φ DIVERGENCE</a>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/demo" class="active">Demo</a>
+        <a href="/engineer">Engineer</a>
+        <a href="https://github.com/aphoticshaman/nucleation-wasm">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="console-layout">
+    <div class="sidebar">
+      <h3>Endpoints</h3>
+      <div class="endpoint-list">
+        <div class="endpoint-item active" data-endpoint="predict">
+          <span class="method method-post">POST</span>
+          <span class="path">/predict</span>
+        </div>
+        <div class="endpoint-item" data-endpoint="explain">
+          <span class="method method-post">POST</span>
+          <span class="path">/explain</span>
+        </div>
+        <div class="endpoint-item" data-endpoint="align">
+          <span class="method method-post">POST</span>
+          <span class="path">/align</span>
+        </div>
+        <div class="endpoint-item" data-endpoint="compare">
+          <span class="method method-post">POST</span>
+          <span class="path">/compare</span>
+        </div>
+        <div class="endpoint-item" data-endpoint="actors">
+          <span class="method method-get">GET</span>
+          <span class="path">/actors</span>
+        </div>
+        <div class="endpoint-item" data-endpoint="cluster">
+          <span class="method method-get">GET</span>
+          <span class="path">/cluster</span>
+        </div>
+        <div class="endpoint-item" data-endpoint="matrix">
+          <span class="method method-get">GET</span>
+          <span class="path">/matrix</span>
+        </div>
+        <div class="endpoint-item" data-endpoint="regions">
+          <span class="method method-get">GET</span>
+          <span class="path">/regions</span>
+        </div>
+      </div>
+
+      <div class="actors-section">
+        <h3>Quick Select</h3>
+        <div class="actor-chips" id="actorChips"></div>
+      </div>
+    </div>
+
+    <div class="main-panel">
+      <div id="endpoint-predict" class="endpoint-form">
+        <h2>Predict Escalation</h2>
+        <p class="desc">Calculate divergence metrics and escalation probability between two actors.</p>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Actor A</label>
+            <select id="predict-a"></select>
+          </div>
+          <span class="vs">vs</span>
+          <div class="input-group">
+            <label>Actor B</label>
+            <select id="predict-b"></select>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Communication Level (0-1)</label>
+          <input type="number" id="predict-comm" value="0.5" min="0" max="1" step="0.1">
+        </div>
+        <button class="run-btn" onclick="runPredict()">Run Prediction</button>
+      </div>
+
+      <div id="endpoint-explain" class="endpoint-form" style="display:none">
+        <h2>Explain Divergence</h2>
+        <p class="desc">Detailed breakdown of which categories drive divergence between actors.</p>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Actor A</label>
+            <select id="explain-a"></select>
+          </div>
+          <span class="vs">vs</span>
+          <div class="input-group">
+            <label>Actor B</label>
+            <select id="explain-b"></select>
+          </div>
+        </div>
+        <button class="run-btn" onclick="runExplain()">Explain Divergence</button>
+      </div>
+
+      <div id="endpoint-align" class="endpoint-form" style="display:none">
+        <h2>Find Alignment</h2>
+        <p class="desc">Identify cooperation opportunities, tension points, and potential mediators.</p>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Actor A</label>
+            <select id="align-a"></select>
+          </div>
+          <span class="vs">↔</span>
+          <div class="input-group">
+            <label>Actor B</label>
+            <select id="align-b"></select>
+          </div>
+        </div>
+        <button class="run-btn" onclick="runAlign()">Find Alignment</button>
+      </div>
+
+      <div id="endpoint-compare" class="endpoint-form" style="display:none">
+        <h2>Compare Actor</h2>
+        <p class="desc">Compare one actor against all others to find allies and rivals.</p>
+        <div class="input-group">
+          <label>Actor</label>
+          <select id="compare-actor"></select>
+        </div>
+        <button class="run-btn" onclick="runCompare()">Compare to All</button>
+      </div>
+
+      <div id="endpoint-actors" class="endpoint-form" style="display:none">
+        <h2>Actor Database</h2>
+        <p class="desc">Retrieve all 40+ actors with metadata and distribution entropy.</p>
+        <button class="run-btn" onclick="runActors()">Fetch Actors</button>
+      </div>
+
+      <div id="endpoint-cluster" class="endpoint-form" style="display:none">
+        <h2>Worldview Clusters</h2>
+        <p class="desc">Group actors by worldview similarity into strategic clusters.</p>
+        <button class="run-btn" onclick="runCluster()">Generate Clusters</button>
+      </div>
+
+      <div id="endpoint-matrix" class="endpoint-form" style="display:none">
+        <h2>Divergence Matrix</h2>
+        <p class="desc">Full N×N matrix of pairwise divergence values. May take a moment.</p>
+        <button class="run-btn" onclick="runMatrix()">Generate Matrix</button>
+      </div>
+
+      <div id="endpoint-regions" class="endpoint-form" style="display:none">
+        <h2>Regional Breakdown</h2>
+        <p class="desc">Actors grouped by geographic region with top priorities.</p>
+        <button class="run-btn" onclick="runRegions()">Fetch Regions</button>
+      </div>
+    </div>
+
+    <div class="output-panel">
+      <h3>
+        Response
+        <div class="output-actions">
+          <button onclick="copyOutput()">Copy</button>
+          <button onclick="exportOutput()">Export</button>
+        </div>
+      </h3>
+      <div class="tabs">
+        <div class="tab active" onclick="setOutputMode('formatted')">Formatted</div>
+        <div class="tab" onclick="setOutputMode('json')">JSON</div>
+      </div>
+      <div class="output-box" id="output">
+        <p class="loading">Select an endpoint and run a query...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const BASE = '';
+    let lastData = null;
+    let outputMode = 'formatted';
+
+    const ACTORS = ['USA','CHN','RUS','EUR','GBR','DEU','FRA','POL','UKR','ISR','IRN','SAU','ARE','TUR','EGY','JPN','KOR','PRK','TWN','IND','PAK','AUS','IDN','VNM','PHL','CAN','MEX','BRA','ARG','VEN','ZAF','NGA','ETH','SYR','AFG','MYS','SGP','NZL','QAT','KAZ','UZB'];
+    const ACTOR_NAMES = {USA:'United States',CHN:'China',RUS:'Russia',EUR:'European Union',GBR:'United Kingdom',DEU:'Germany',FRA:'France',POL:'Poland',UKR:'Ukraine',ISR:'Israel',IRN:'Iran',SAU:'Saudi Arabia',ARE:'UAE',TUR:'Turkey',EGY:'Egypt',JPN:'Japan',KOR:'South Korea',PRK:'North Korea',TWN:'Taiwan',IND:'India',PAK:'Pakistan',AUS:'Australia',IDN:'Indonesia',VNM:'Vietnam',PHL:'Philippines',CAN:'Canada',MEX:'Mexico',BRA:'Brazil',ARG:'Argentina',VEN:'Venezuela',ZAF:'South Africa',NGA:'Nigeria',ETH:'Ethiopia',SYR:'Syria',AFG:'Afghanistan',MYS:'Malaysia',SGP:'Singapore',NZL:'New Zealand',QAT:'Qatar',KAZ:'Kazakhstan',UZB:'Uzbekistan'};
+
+    // Populate selects
+    function populateSelects() {
+      const selects = document.querySelectorAll('select');
+      selects.forEach(sel => {
+        sel.innerHTML = ACTORS.map(a => \`<option value="\${a}">\${ACTOR_NAMES[a]} (\${a})</option>\`).join('');
+      });
+      document.getElementById('predict-a').value = 'CHN';
+      document.getElementById('predict-b').value = 'USA';
+      document.getElementById('explain-a').value = 'ISR';
+      document.getElementById('explain-b').value = 'IRN';
+      document.getElementById('align-a').value = 'USA';
+      document.getElementById('align-b').value = 'CHN';
+      document.getElementById('compare-actor').value = 'TWN';
+    }
+
+    // Populate actor chips
+    function populateChips() {
+      const container = document.getElementById('actorChips');
+      container.innerHTML = ['USA','CHN','RUS','ISR','IRN','TWN','UKR','PRK'].map(a =>
+        \`<div class="actor-chip" onclick="quickSelect('\${a}')">\${a}</div>\`
+      ).join('');
+    }
+
+    function quickSelect(actor) {
+      const activeEndpoint = document.querySelector('.endpoint-item.active').dataset.endpoint;
+      if (['predict','explain','align'].includes(activeEndpoint)) {
+        document.getElementById(activeEndpoint + '-a').value = actor;
+      } else if (activeEndpoint === 'compare') {
+        document.getElementById('compare-actor').value = actor;
+      }
+    }
+
+    // Endpoint switching
+    document.querySelectorAll('.endpoint-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.endpoint-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        document.querySelectorAll('.endpoint-form').forEach(f => f.style.display = 'none');
+        document.getElementById('endpoint-' + item.dataset.endpoint).style.display = 'block';
+      });
+    });
+
+    function setOutputMode(mode) {
+      outputMode = mode;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(\`.tab:nth-child(\${mode === 'formatted' ? 1 : 2})\`).classList.add('active');
+      if (lastData) renderOutput(lastData);
+    }
+
+    function renderOutput(data) {
+      const box = document.getElementById('output');
+      if (outputMode === 'json') {
+        box.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+      } else {
+        box.innerHTML = formatData(data);
+      }
+    }
+
+    function formatData(d) {
+      if (d.metrics && d.prediction) {
+        // Predict response
+        return \`
+          <div class="result-card">
+            <h4>\${d.actor_a.name} vs \${d.actor_b.name}</h4>
+            <div class="result-metric"><span class="label">Φ (Divergence)</span><span class="value">\${d.metrics.phi}</span></div>
+            <div class="result-metric"><span class="label">Risk Level</span><span class="value risk-\${d.prediction.risk_level}">\${d.prediction.risk_level}</span></div>
+            <div class="result-metric"><span class="label">Escalation Prob</span><span class="value">\${(d.prediction.escalation_probability * 100).toFixed(1)}%</span></div>
+            <div class="result-metric"><span class="label">Jensen-Shannon</span><span class="value">\${d.metrics.jensen_shannon}</span></div>
+            <div class="result-metric"><span class="label">Hellinger</span><span class="value">\${d.metrics.hellinger}</span></div>
+          </div>\`;
+      } else if (d.top_divergence_drivers) {
+        // Explain response
+        return \`
+          <div class="result-card">
+            <h4>\${d.actor_a.name} vs \${d.actor_b.name}</h4>
+            <div class="result-metric"><span class="label">Total Φ</span><span class="value">\${d.total_phi}</span></div>
+            <div class="result-metric"><span class="label">Risk</span><span class="value risk-\${d.risk_level}">\${d.risk_level}</span></div>
+          </div>
+          <div class="result-card">
+            <h4>Top Divergence Drivers</h4>
+            \${d.top_divergence_drivers.map(t => \`
+              <div class="result-metric">
+                <span class="label">\${t.category.replace(/_/g,' ')}</span>
+                <span class="value">\${t.percent_of_total}%</span>
+              </div>\`).join('')}
+          </div>\`;
+      } else if (d.aligned_categories) {
+        // Align response
+        return \`
+          <div class="result-card">
+            <h4>Cooperation Opportunities</h4>
+            \${d.aligned_categories.slice(0,5).map(c => \`<span class="actor-chip" style="background:var(--accent);color:var(--bg)">\${c.category.replace(/_/g,' ')}</span>\`).join(' ')}
+          </div>
+          <div class="result-card">
+            <h4>Tension Points</h4>
+            \${d.tension_points.slice(0,5).map(c => \`<span class="actor-chip" style="background:var(--accent2);color:var(--bg)">\${c.category.replace(/_/g,' ')}</span>\`).join(' ')}
+          </div>
+          <div class="result-card">
+            <h4>Potential Mediators</h4>
+            \${d.potential_mediators.slice(0,5).map(m => \`<span class="actor-chip">\${m.name}</span>\`).join(' ')}
+          </div>\`;
+      } else if (d.most_aligned) {
+        // Compare response
+        return \`
+          <div class="result-card">
+            <h4>Most Aligned</h4>
+            \${d.most_aligned.slice(0,8).map(a => \`
+              <div class="result-metric">
+                <span class="label">\${a.name}</span>
+                <span class="value risk-\${a.risk_level}">\${a.phi}</span>
+              </div>\`).join('')}
+          </div>
+          <div class="result-card">
+            <h4>Most Divergent</h4>
+            \${d.most_divergent.slice(0,8).map(a => \`
+              <div class="result-metric">
+                <span class="label">\${a.name}</span>
+                <span class="value risk-\${a.risk_level}">\${a.phi}</span>
+              </div>\`).join('')}
+          </div>\`;
+      } else if (d.clusters) {
+        // Cluster response
+        return Object.entries(d.clusters).map(([name, actors]) => \`
+          <div class="result-card">
+            <h4>\${name}</h4>
+            \${actors.map(a => \`<span class="actor-chip">\${a.code}</span>\`).join(' ')}
+          </div>\`).join('');
+      } else if (d.matrix) {
+        // Matrix response
+        return \`
+          <div class="result-card">
+            <h4>Global Stats</h4>
+            <div class="result-metric"><span class="label">Average Φ</span><span class="value">\${d.global_average_phi}</span></div>
+          </div>
+          <div class="result-card">
+            <h4>Most Aligned Pairs</h4>
+            \${d.most_aligned_pairs.slice(0,5).map(p => \`
+              <div class="result-metric">
+                <span class="label">\${p.a}-\${p.b}</span>
+                <span class="value">\${p.phi}</span>
+              </div>\`).join('')}
+          </div>
+          <div class="result-card">
+            <h4>Most Divergent Pairs</h4>
+            \${d.most_divergent_pairs.slice(0,5).map(p => \`
+              <div class="result-metric">
+                <span class="label">\${p.a}-\${p.b}</span>
+                <span class="value">\${p.phi}</span>
+              </div>\`).join('')}
+          </div>\`;
+      } else if (d.regions) {
+        // Regions response
+        return Object.entries(d.regions).map(([name, actors]) => \`
+          <div class="result-card">
+            <h4>\${name}</h4>
+            \${actors.map(a => \`<span class="actor-chip">\${a.code}</span>\`).join(' ')}
+          </div>\`).join('');
+      } else if (d.actors) {
+        // Actors response
+        return \`
+          <div class="result-card">
+            <h4>Total Actors: \${d.total}</h4>
+          </div>
+          \${d.actors.slice(0,15).map(a => \`
+            <div class="result-metric" style="padding:0.5rem 0;border-bottom:1px solid var(--border)">
+              <span class="label">\${a.code} - \${a.name}</span>
+              <span class="value">\${a.region}</span>
+            </div>\`).join('')}
+          <p style="color:var(--muted);margin-top:1rem;font-size:0.85rem">...and \${d.total - 15} more</p>\`;
+      }
+      return '<pre>' + JSON.stringify(d, null, 2) + '</pre>';
+    }
+
+    async function runPredict() {
+      const a = document.getElementById('predict-a').value;
+      const b = document.getElementById('predict-b').value;
+      const comm = parseFloat(document.getElementById('predict-comm').value);
+      document.getElementById('output').innerHTML = '<p class="loading">Loading...</p>';
+      const r = await fetch(BASE + '/predict', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({actor_a: a, actor_b: b, communication_level: comm})
+      });
+      lastData = await r.json();
+      renderOutput(lastData);
+    }
+
+    async function runExplain() {
+      const a = document.getElementById('explain-a').value;
+      const b = document.getElementById('explain-b').value;
+      document.getElementById('output').innerHTML = '<p class="loading">Loading...</p>';
+      const r = await fetch(BASE + '/explain', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({actor_a: a, actor_b: b})});
+      lastData = await r.json();
+      renderOutput(lastData);
+    }
+
+    async function runAlign() {
+      const a = document.getElementById('align-a').value;
+      const b = document.getElementById('align-b').value;
+      document.getElementById('output').innerHTML = '<p class="loading">Loading...</p>';
+      const r = await fetch(BASE + '/align', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({actor_a: a, actor_b: b})});
+      lastData = await r.json();
+      renderOutput(lastData);
+    }
+
+    async function runCompare() {
+      const actor = document.getElementById('compare-actor').value;
+      document.getElementById('output').innerHTML = '<p class="loading">Loading...</p>';
+      const r = await fetch(BASE + '/compare', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({actor})});
+      lastData = await r.json();
+      renderOutput(lastData);
+    }
+
+    async function runActors() {
+      document.getElementById('output').innerHTML = '<p class="loading">Loading...</p>';
+      const r = await fetch(BASE + '/actors');
+      lastData = await r.json();
+      renderOutput(lastData);
+    }
+
+    async function runCluster() {
+      document.getElementById('output').innerHTML = '<p class="loading">Loading...</p>';
+      const r = await fetch(BASE + '/cluster');
+      lastData = await r.json();
+      renderOutput(lastData);
+    }
+
+    async function runMatrix() {
+      document.getElementById('output').innerHTML = '<p class="loading">Computing 1600+ comparisons...</p>';
+      const r = await fetch(BASE + '/matrix');
+      lastData = await r.json();
+      renderOutput(lastData);
+    }
+
+    async function runRegions() {
+      document.getElementById('output').innerHTML = '<p class="loading">Loading...</p>';
+      const r = await fetch(BASE + '/regions');
+      lastData = await r.json();
+      renderOutput(lastData);
+    }
+
+    function copyOutput() {
+      if (!lastData) return;
+      navigator.clipboard.writeText(JSON.stringify(lastData, null, 2));
+    }
+
+    function exportOutput() {
+      if (!lastData) return;
+      const blob = new Blob([JSON.stringify(lastData, null, 2)], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'divergence-output.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    populateSelects();
+    populateChips();
+  </script>
+</body>
+</html>`;
+
 const EPSILON = 1e-10;
 
 function normalize(dist) {
@@ -1544,6 +2507,20 @@ export default {
       // Landing page
       if (path === "/" && request.method === "GET") {
         return new Response(LANDING_PAGE_HTML, {
+          headers: { "Content-Type": "text/html; charset=utf-8" },
+        });
+      }
+
+      // Engineer documentation page
+      if (path === "/engineer" && request.method === "GET") {
+        return new Response(ENGINEER_PAGE_HTML, {
+          headers: { "Content-Type": "text/html; charset=utf-8" },
+        });
+      }
+
+      // Interactive demo page
+      if (path === "/demo" && request.method === "GET") {
+        return new Response(DEMO_PAGE_HTML, {
           headers: { "Content-Type": "text/html; charset=utf-8" },
         });
       }
