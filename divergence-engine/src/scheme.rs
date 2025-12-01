@@ -11,7 +11,7 @@ use crate::error::{DivergenceError, Result};
 use serde::{Deserialize, Serialize};
 
 /// Source of compression scheme data
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum SchemeSource {
     /// Extracted from text (speeches, documents, media)
     Text,
@@ -22,13 +22,8 @@ pub enum SchemeSource {
     /// Goldstein scale binning
     Goldstein,
     /// Manually specified
+    #[default]
     Manual,
-}
-
-impl Default for SchemeSource {
-    fn default() -> Self {
-        Self::Manual
-    }
 }
 
 /// Represents an actor's compression scheme.
@@ -229,9 +224,8 @@ impl CompressionScheme {
         };
 
         // Exponential moving average update
-        for i in 0..self.distribution.len() {
-            self.distribution[i] =
-                (1.0 - learning_rate) * self.distribution[i] + learning_rate * obs_normalized[i];
+        for (dist, obs) in self.distribution.iter_mut().zip(obs_normalized.iter()) {
+            *dist = (1.0 - learning_rate) * *dist + learning_rate * obs;
         }
 
         self.normalize_and_smooth();
@@ -421,8 +415,8 @@ mod tests {
         let h = a.hellinger_distance(&b).unwrap();
 
         assert!(phi > 0.0);
-        assert!(js >= 0.0 && js <= 1.0);
-        assert!(h >= 0.0 && h <= 1.0);
+        assert!((0.0..=1.0).contains(&js));
+        assert!((0.0..=1.0).contains(&h));
     }
 
     #[test]
