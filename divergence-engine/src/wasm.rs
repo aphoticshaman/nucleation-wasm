@@ -162,7 +162,7 @@ impl WasmDivergenceEngine {
         self.model
             .actors()
             .into_iter()
-            .map(|s| JsValue::from_str(s))
+            .map(JsValue::from_str)
             .collect()
     }
 
