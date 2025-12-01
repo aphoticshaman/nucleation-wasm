@@ -42,7 +42,7 @@ async-trait = { version = "0.1", optional = true }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3"
-criterion = "0.5"
+criterion = "0.8"
 
 [[bench]]
 name = "divergence_bench"
